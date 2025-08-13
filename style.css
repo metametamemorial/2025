@@ -76,6 +76,7 @@ button:hover {
     max-height: 70%; /* 画面高さの70% */
     object-fit: contain;
     margin-bottom: 30px; /* ボタンとの間隔 */
+    z-index: 99;
 }
 
 #start-btn {
@@ -89,6 +90,7 @@ button:hover {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-weight: 700;
+    z-index: 102;
 }
 
 #start-btn:hover {
@@ -98,4 +100,28 @@ button:hover {
 /* 非表示にするクラス */
 .hidden {
     display: none !important; /* !important で強制的に非表示 */
+}
+
+.title-text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 101; /* タイトル画像より手前 */
+    color: #333; /* テキスト色 */
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7); /* 白い影で読みやすく */
+}
+
+.title-text-overlay .emoji {
+    font-size: 80px; /* 絵文字のサイズ */
+    display: block; /* 独立した行に */
+    margin-bottom: 10px;
+}
+
+.title-text-overlay h1 {
+    font-size: 48px; /* テキストのサイズ */
+    margin: 0;
+    padding: 0;
+    white-space: nowrap; /* 折り返しを防ぐ */
 }
