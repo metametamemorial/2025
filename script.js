@@ -74,8 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         isTransitioning = true;
 
         const randomAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
-        const animationInClass = (direction === 'next') ? randomAnimation.in : 'fade-in';   // Prevはシンプルにフェードイン
-        const animationOutClass = (direction === 'next') ? randomAnimation.out : 'fade-out'; // Prevはシンプルにフェードアウト
+        const animationInClass = (direction === 'next') ? randomAnimation.in : 'fade-in';
+        const animationOutClass = (direction === 'next') ? randomAnimation.out : 'fade-out';
 
         // 1. 画像切替
         currentImageIndex = index;
@@ -83,19 +83,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. インアニメーション
         imageElement.classList.add(animationInClass);
         imageElement.classList.remove(animationOutClass);
+        imageElement.style.opacity = 1; // 表示を強制
 
         setTimeout(() => {
-            imageElement.classList.remove(animationInClass);
+            // インアニメーション終了後もクラスは残す（静止表示を維持）
             // 3. 静止表示
             setTimeout(() => {
                 // 4. アウトアニメーション
                 imageElement.classList.add(animationOutClass);
+                imageElement.classList.remove(animationInClass); // ここでremove
+                // アウトアニメーション中も表示を維持
+                imageElement.style.opacity = 1;
                 setTimeout(() => {
                     imageElement.classList.remove(animationOutClass);
                     isTransitioning = false;
-                    // 自動再生中なら次のタイマーをセット
                     if (isPlaying) {
-                        nextImage(); // ここで次の画像へ
+                        nextImage();
                     }
                 }, animationDuration);
             }, staticDuration);
