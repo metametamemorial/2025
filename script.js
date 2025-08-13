@@ -4,8 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const slideshowContainer = document.getElementById('slideshow-container');
     const controls = document.getElementById('controls');
 
-    const currentImageElement = document.getElementById('slide-image-current');
-    const nextImageElement = document.getElementById('slide-image-next');
+    const imageElement = document.getElementById('slide-image-current'); // 画像要素は1つでOK
     const bgmElement = document.getElementById('bgm');
     const prevBtn = document.getElementById('prev-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
@@ -46,18 +45,23 @@ document.addEventListener('DOMContentLoaded', () => {
         "assets/image/a/0097.png", "assets/image/a/0098.png", "assets/image/a/0099.png",
         "assets/image/a/0100.png"
     ];
-    let imageFiles = [...originalImageFiles]; // シャッフル用
+    let imageFiles = [...originalImageFiles];
     const bgmFile = "assets/bgm/0000.mp3";
 
-    const animationClasses = ['fade-in-out', 'slide-left', 'slide-right', 'zoom-in', 'sepia-to-normal'];
-    const animationDuration = 2500; // CSSアニメーションのdurationと合わせる (ms)
+    const animationPairs = [
+        { in: 'fade-in', out: 'fade-out' },
+        { in: 'zoom-in', out: 'zoom-out' },
+        { in: 'slide-in-left', out: 'slide-out-right' },
+        { in: 'slide-in-right', out: 'slide-out-left' }
+    ];
+    const animationDuration = 1500; // 1.5s
+    const staticDuration = 4500; // 4.5s
 
     let currentImageIndex = 0;
     let isPlaying = false;
-    let slideshowInterval;
-    let activeImageElement = currentImageElement; // 追加
+    let slideshowTimeout;
+    let isTransitioning = false; // アニメーション中のフラグ
 
-    // 配列をシャッフルする関数 (Fisher-Yatesアルゴリズム)
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -65,69 +69,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showImage(index) {
-        const nextImageSrc = imageFiles[index];
+    function showImage(index, direction = 'next') {
+        if (isTransitioning) return;
+        isTransitioning = true;
 
-        // 現在表示中の画像をフェードアウトさせる
-        if (activeImageElement) {
-            activeImageElement.classList.remove('active');
-            activeImageElement.classList.remove('cross-fade-in'); // 以前のアニメーションをクリア
-            activeImageElement.classList.add('cross-fade-out');
-        }
+        const randomAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
+        const animationInClass = (direction === 'next') ? randomAnimation.in : 'fade-in';   // Prevはシンプルにフェードイン
+        const animationOutClass = (direction === 'next') ? randomAnimation.out : 'fade-out'; // Prevはシンプルにフェードアウト
 
-        // 次の画像要素を準備
-        const targetImageElement = (activeImageElement === currentImageElement) ? nextImageElement : currentImageElement;
-        targetImageElement.src = nextImageSrc;
-        targetImageElement.classList.remove('cross-fade-out'); // 以前のアニメーションをクリア
-        targetImageElement.classList.add('active'); // 新しい画像をアクティブにする
+        // 1. 画像切替
+        currentImageIndex = index;
+        imageElement.src = imageFiles[currentImageIndex];
+        // 2. インアニメーション
+        imageElement.classList.add(animationInClass);
+        imageElement.classList.remove(animationOutClass);
 
-        // ランダムなアニメーションクラスを適用 (クロスフェード以外の演出)
-        const randomAnimation = animationClasses[Math.floor(Math.random() * animationClasses.length)];
-        targetImageElement.classList.add(randomAnimation);
-
-        // アニメーション終了後にクラスを削除
-        targetImageElement.addEventListener('animationend', function handler() {
-            targetImageElement.classList.remove(randomAnimation);
-            targetImageElement.removeEventListener('animationend', handler);
-        });
-
-        activeImageElement = targetImageElement; // アクティブな画像要素を更新
+        setTimeout(() => {
+            imageElement.classList.remove(animationInClass);
+            // 3. 静止表示
+            setTimeout(() => {
+                // 4. アウトアニメーション
+                imageElement.classList.add(animationOutClass);
+                setTimeout(() => {
+                    imageElement.classList.remove(animationOutClass);
+                    isTransitioning = false;
+                    // 自動再生中なら次のタイマーをセット
+                    if (isPlaying) {
+                        nextImage(); // ここで次の画像へ
+                    }
+                }, animationDuration);
+            }, staticDuration);
+        }, animationDuration);
     }
 
     function nextImage() {
-        currentImageIndex++;
-        if (currentImageIndex >= imageFiles.length) {
-            endSlideshow(); // 一巡したら終了処理
+        let nextIndex = currentImageIndex + 1;
+        if (nextIndex >= imageFiles.length) {
+            endSlideshow();
         } else {
-            showImage(currentImageIndex);
+            showImage(nextIndex, 'next');
         }
     }
 
     function prevImage() {
-        currentImageIndex = (currentImageIndex - 1 + imageFiles.length) % imageFiles.length;
-        showImage(currentImageIndex);
+        let prevIndex = (currentImageIndex - 1 + imageFiles.length) % imageFiles.length;
+        showImage(prevIndex, 'prev');
     }
 
     function playSlideshow() {
+        if (isPlaying) return;
         isPlaying = true;
         playPauseBtn.textContent = '❚❚';
-        bgmElement.play().catch(error => {
-            console.error("BGMの再生に失敗しました:", error);
-            // ユーザーに再生ボタンを押してもらうなどの代替手段を促すメッセージを表示することも可能
-            // 例: alert("BGMの再生がブロックされました。手動で再生ボタンを押してください。");
-        });
-        // アニメーションのduration + 次の画像までの間隔
-        slideshowInterval = setInterval(nextImage, animationDuration + 4500); // 2.5秒アニメーション + 4.5秒静止 = 7秒
+        bgmElement.play().catch(error => console.error("BGM Error:", error));
+        // 最初の画像表示を開始
+        showImage(currentImageIndex, 'next');
     }
 
     function pauseSlideshow() {
+        if (!isPlaying) return;
         isPlaying = false;
         playPauseBtn.textContent = '▶';
         bgmElement.pause();
-        clearInterval(slideshowInterval);
+        clearTimeout(slideshowTimeout);
     }
 
     function togglePlayPause() {
+        if (isTransitioning) return; // アニメーション中は操作不可
         if (isPlaying) {
             pauseSlideshow();
         } else {
@@ -136,9 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endSlideshow() {
-        pauseSlideshow(); // スライドショーを停止
-
-        // BGMをフェードアウト
+        pauseSlideshow();
         let volume = bgmElement.volume;
         const fadeOutInterval = setInterval(() => {
             if (volume > 0.1) {
@@ -146,55 +151,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 bgmElement.volume = volume;
             } else {
                 bgmElement.pause();
-                bgmElement.volume = 1; // 次回のために音量をリセット
+                bgmElement.volume = 1;
                 clearInterval(fadeOutInterval);
             }
         }, 100);
 
-        // 画像をフェードアウト
-        activeImageElement.style.opacity = 0;
+        imageElement.classList.add('fade-out');
         setTimeout(() => {
             slideshowContainer.classList.add('hidden');
             controls.classList.add('hidden');
-            // タイトル画面を再表示
             titleScreen.classList.remove('hidden');
             titleScreen.style.opacity = 1;
-            currentImageIndex = 0; // インデックスをリセット
-            imageFiles = [...originalImageFiles]; // 画像リストをリセット
-            shuffleArray(imageFiles); // 次回のためにシャッフル
-            // 画像要素の初期状態をリセット
-            currentImageElement.classList.remove('active', 'cross-fade-out');
-            nextImageElement.classList.remove('active', 'cross-fade-out');
-            currentImageElement.style.opacity = '';
-            nextImageElement.style.opacity = '';
-            activeImageElement = currentImageElement; // activeImageElementをリセット
-        }, animationDuration); // アニメーションの時間と合わせる
+            imageElement.classList.remove('fade-out');
+            imageElement.style.opacity = 0; // 初期状態に戻す
+            resetSlideshow();
+        }, animationDuration);
     }
 
-    // イベントリスナー
-    nextBtn.addEventListener('click', nextImage);
-    prevBtn.addEventListener('click', prevImage);
+    function resetSlideshow() {
+        currentImageIndex = 0;
+        imageFiles = [...originalImageFiles];
+        shuffleArray(imageFiles);
+    }
+
+    // --- Event Listeners & Initialization ---
+    nextBtn.addEventListener('click', () => !isTransitioning && nextImage());
+    prevBtn.addEventListener('click', () => !isTransitioning && prevImage());
     playPauseBtn.addEventListener('click', togglePlayPause);
 
-    // 初期化
-    bgmElement.src = bgmFile;
-
-    // スタートボタンのイベントリスナー
     startBtn.addEventListener('click', () => {
-        // 画像リストをシャッフル
         shuffleArray(imageFiles);
-        currentImageIndex = 0; // シャッフル後にインデックスをリセット
+        currentImageIndex = 0;
+        imageElement.src = imageFiles[currentImageIndex];
 
-        // タイトル画面を非表示にする
         titleScreen.style.opacity = 0;
         setTimeout(() => {
             titleScreen.classList.add('hidden');
-            // スライドショーとコントロールを表示する
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
-            // 最初の画像を表示し、スライドショーを開始する
-            showImage(currentImageIndex);
+            // 最初の画像を表示（アニメーションはplaySlideshowで）
             playSlideshow();
-        }, 1000); // フェードアウトの時間と合わせる
+        }, 1000);
     });
+
+    // 初期化
+    bgmElement.src = bgmFile;
+    imageElement.style.opacity = 0; // 最初は非表示
+
+    // scheduleNextImage関数は不要になったのでコメントアウト
+    // function scheduleNextImage() {
+    //     clearTimeout(slideshowTimeout);
+    //     slideshowTimeout = setTimeout(nextImage, staticDuration);
+    // }
 });
