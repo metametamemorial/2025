@@ -55,9 +55,6 @@ button:hover {
 
 /* タイトル画面 */
 #title-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     background-color: #fff;
@@ -74,7 +71,6 @@ button:hover {
     max-height: 70%; /* 画面高さの70% */
     object-fit: contain;
     margin-bottom: 30px; /* ボタンとの間隔 */
-    z-index: 99;
 }
 
 #start-btn {
@@ -88,7 +84,6 @@ button:hover {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-weight: 700;
-    z-index: 102;
 }
 
 #start-btn:hover {
@@ -100,28 +95,32 @@ button:hover {
     display: none !important; /* !important で強制的に非表示 */
 }
 
-.title-text-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.title-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    z-index: 101; /* タイトル画像より手前 */
-    color: #333; /* テキスト色 */
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7); /* 白い影で読みやすく */
+    padding: 20px;
 }
 
-.title-text-overlay .emoji {
-    font-size: 80px; /* 絵文字のサイズ */
-    display: block; /* 独立した行に */
-    margin-bottom: 10px;
+.main-title {
+    font-size: 3.5em; /* 大きめのフォントサイズ */
+    margin-bottom: 10px; /* サブタイトルとの間隔 */
+    color: #333;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.title-text-overlay h1 {
-    font-size: 48px; /* テキストのサイズ */
-    margin: 0;
-    padding: 0;
-    white-space: nowrap; /* 折り返しを防ぐ */
+.sub-title {
+    font-size: 2em;
+    margin-bottom: 40px; /* 画像との間隔 */
+    color: #555;
+}
+
+.emoji {
+    font-size: 1em; /* 親要素のフォントサイズに合わせる */
+    vertical-align: middle; /* テキストと高さを合わせる */
+    margin-right: 10px;
 }
 
 /* スライドショーアニメーション */
