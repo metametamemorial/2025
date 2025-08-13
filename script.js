@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const slideshowContainer = document.getElementById('slideshow-container');
     const controls = document.getElementById('controls');
 
-    const imageElement = document.getElementById('slide-image-current'); // 画像要素は1つでOK
+    const imageElement = document.getElementById('slide-image-current');
     const bgmElement = document.getElementById('bgm');
     const prevBtn = document.getElementById('prev-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
@@ -59,8 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentImageIndex = 0;
     let isPlaying = false;
-    let slideshowTimeout;
-    let isTransitioning = false; // アニメーション中のフラグ
+    let slideshowInterval;
+    let isTransitioning = false;
+    let currentAnimation = {};
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -69,75 +70,83 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showImage(index, direction = 'next') {
-        if (isTransitioning) return;
-        isTransitioning = true;
-
-        const randomAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
-        const animationInClass = (direction === 'next') ? randomAnimation.in : 'fade-in';
-        const animationOutClass = (direction === 'next') ? randomAnimation.out : 'fade-out';
-
-        // 1. 画像切替
+    // 画像を表示し、インアニメーションを適用する関数
+    function showImage(index) {
         currentImageIndex = index;
         imageElement.src = imageFiles[currentImageIndex];
-        // 2. インアニメーション
-        imageElement.classList.add(animationInClass);
-        imageElement.classList.remove(animationOutClass);
-        imageElement.style.opacity = 1; // 表示を強制
 
+        // 前のアニメーションクラスを削除
+        imageElement.className = 'slide-image'; 
+        imageElement.classList.add(currentAnimation.in);
+        
+        // アニメーション終了後にクラスを削除して静止状態にする
         setTimeout(() => {
-            // インアニメーション終了後もクラスは残す（静止表示を維持）
-            // 3. 静止表示
-            setTimeout(() => {
-                // 4. アウトアニメーション
-                imageElement.classList.add(animationOutClass);
-                imageElement.classList.remove(animationInClass); // ここでremove
-                // アウトアニメーション中も表示を維持
-                imageElement.style.opacity = 1;
-                setTimeout(() => {
-                    imageElement.classList.remove(animationOutClass);
-                    isTransitioning = false;
-                    if (isPlaying) {
-                        nextImage();
-                    }
-                }, animationDuration);
-            }, staticDuration);
+            imageElement.classList.remove(currentAnimation.in);
+            isTransitioning = false;
         }, animationDuration);
     }
 
+    // 次の画像へ切り替える処理（アウトアニメーション -> インアニメーション）
     function nextImage() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
         let nextIndex = currentImageIndex + 1;
         if (nextIndex >= imageFiles.length) {
             endSlideshow();
-        } else {
-            showImage(nextIndex, 'next');
+            return;
         }
+        
+        // ランダムなアニメーションを選択
+        currentAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
+
+        // アウトアニメーションを適用
+        imageElement.classList.add(currentAnimation.out);
+
+        // アウトアニメーションが終わったら次の画像を表示
+        setTimeout(() => {
+            showImage(nextIndex);
+        }, animationDuration);
     }
 
     function prevImage() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
         let prevIndex = (currentImageIndex - 1 + imageFiles.length) % imageFiles.length;
-        showImage(prevIndex, 'prev');
+        
+        // Prev時はシンプルなフェード
+        currentAnimation = { in: 'fade-in', out: 'fade-out' };
+
+        imageElement.classList.add(currentAnimation.out);
+
+        setTimeout(() => {
+            showImage(prevIndex);
+        }, animationDuration);
     }
 
     function playSlideshow() {
-        if (isPlaying) return;
         isPlaying = true;
         playPauseBtn.textContent = '❚❚';
         bgmElement.play().catch(error => console.error("BGM Error:", error));
-        // 最初の画像表示を開始
-        showImage(currentImageIndex, 'next');
+        
+        // 最初の画像表示
+        isTransitioning = true;
+        currentAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
+        showImage(currentImageIndex);
+
+        // 定期的なスライドショーを開始
+        slideshowInterval = setInterval(nextImage, animationDuration + staticDuration + animationDuration);
     }
 
     function pauseSlideshow() {
-        if (!isPlaying) return;
         isPlaying = false;
         playPauseBtn.textContent = '▶';
         bgmElement.pause();
-        clearTimeout(slideshowTimeout);
+        clearInterval(slideshowInterval);
     }
 
     function togglePlayPause() {
-        if (isTransitioning) return; // アニメーション中は操作不可
         if (isPlaying) {
             pauseSlideshow();
         } else {
@@ -165,8 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             controls.classList.add('hidden');
             titleScreen.classList.remove('hidden');
             titleScreen.style.opacity = 1;
-            imageElement.classList.remove('fade-out');
-            imageElement.style.opacity = 0; // 初期状態に戻す
+            imageElement.className = 'slide-image'; // クラスをリセット
             resetSlideshow();
         }, animationDuration);
     }
@@ -178,13 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners & Initialization ---
-    nextBtn.addEventListener('click', () => !isTransitioning && nextImage());
-    prevBtn.addEventListener('click', () => !isTransitioning && prevImage());
+    nextBtn.addEventListener('click', nextImage);
+    prevBtn.addEventListener('click', prevImage);
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
-        shuffleArray(imageFiles);
-        currentImageIndex = 0;
+        resetSlideshow();
         imageElement.src = imageFiles[currentImageIndex];
 
         titleScreen.style.opacity = 0;
@@ -192,18 +199,10 @@ document.addEventListener('DOMContentLoaded', () => {
             titleScreen.classList.add('hidden');
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
-            // 最初の画像を表示（アニメーションはplaySlideshowで）
             playSlideshow();
         }, 1000);
     });
 
     // 初期化
     bgmElement.src = bgmFile;
-    imageElement.style.opacity = 0; // 最初は非表示
-
-    // scheduleNextImage関数は不要になったのでコメントアウト
-    // function scheduleNextImage() {
-    //     clearTimeout(slideshowTimeout);
-    //     slideshowTimeout = setTimeout(nextImage, staticDuration);
-    // }
 });
