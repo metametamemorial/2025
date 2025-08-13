@@ -22,11 +22,9 @@ body, html {
 }
 
 #slide-image {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 80%;
+    max-height: 80%;
     object-fit: contain;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
 }
 
 #controls {
@@ -124,4 +122,55 @@ button:hover {
     margin: 0;
     padding: 0;
     white-space: nowrap; /* 折り返しを防ぐ */
+}
+
+/* スライドショーアニメーション */
+.fade-in-out {
+    animation: fadeInOut 1.5s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.slide-left {
+    animation: slideLeft 1.5s ease-in-out forwards;
+}
+
+@keyframes slideLeft {
+    0% { transform: translateX(100%); opacity: 0; }
+    50% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-100%); opacity: 0; }
+}
+
+.slide-right {
+    animation: slideRight 1.5s ease-in-out forwards;
+}
+
+@keyframes slideRight {
+    0% { transform: translateX(-100%); opacity: 0; }
+    50% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+}
+
+.zoom-in {
+    animation: zoomIn 1.5s ease-in-out forwards;
+}
+
+@keyframes zoomIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+.rotate-in {
+    animation: rotateIn 1.5s ease-in-out forwards;
+}
+
+@keyframes rotateIn {
+    0% { transform: rotate(-180deg) scale(0.5); opacity: 0; }
+    50% { transform: rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: rotate(180deg) scale(0.5); opacity: 0; }
 }
