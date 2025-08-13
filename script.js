@@ -1,5 +1,9 @@
-
 document.addEventListener('DOMContentLoaded', () => {
+    const titleScreen = document.getElementById('title-screen');
+    const startBtn = document.getElementById('start-btn');
+    const slideshowContainer = document.getElementById('slideshow-container');
+    const controls = document.getElementById('controls');
+
     const imageElement = document.getElementById('slide-image');
     const bgmElement = document.getElementById('bgm');
     const prevBtn = document.getElementById('prev-btn');
@@ -94,5 +98,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初期化
     bgmElement.src = bgmFile;
-    showImage(currentImageIndex);
+
+    // スタートボタンのイベントリスナー
+    startBtn.addEventListener('click', () => {
+        // タイトル画面を非表示にする
+        titleScreen.style.opacity = 0;
+        setTimeout(() => {
+            titleScreen.classList.add('hidden');
+            // スライドショーとコントロールを表示する
+            slideshowContainer.classList.remove('hidden');
+            controls.classList.remove('hidden');
+            // 最初の画像を表示し、スライドショーを開始する
+            showImage(currentImageIndex);
+            playSlideshow();
+        }, 1000); // フェードアウトの時間と合わせる
+    });
 });

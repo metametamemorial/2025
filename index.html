@@ -7,15 +7,32 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="slideshow-container">
+
+    <div id="title-screen">
+        <img id="title-image" src="assets/image/a/0001.png" alt="タイトル">
+        <button id="start-btn">START</button>
+    </div>
+
+    <body>
+
+    <div id="title-screen">
+        <img id="title-image" src="assets/image/a/0001.png" alt="タイトル">
+        <button id="start-btn">START</button>
+    </div>
+
+    <div id="slideshow-container" class="hidden">
         <img id="slide-image">
         <audio id="bgm" loop></audio>
     </div>
-    <div id="controls">
+    <div id="controls" class="hidden">
         <button id="prev-btn">◀</button>
         <button id="play-pause-btn">▶</button>
         <button id="next-btn">▶</button>
     </div>
+
+    <script src="script.js"></script>
+</body>
+
     <script src="script.js"></script>
 </body>
 </html>
