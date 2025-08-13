@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgmFile = "assets/bgm/0000.mp3";
 
     const animationClasses = ['fade-in-out', 'slide-left', 'slide-right', 'zoom-in', 'sepia-to-normal'];
-    const animationDuration = 1500; // CSSアニメーションのdurationと合わせる (ms)
+    const animationDuration = 2500; // CSSアニメーションのdurationと合わせる (ms)
 
     let currentImageIndex = 0;
     let isPlaying = false;
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 例: alert("BGMの再生がブロックされました。手動で再生ボタンを押してください。");
         });
         // アニメーションのduration + 次の画像までの間隔
-        slideshowInterval = setInterval(nextImage, animationDuration + 3500); // 1.5秒アニメーション + 3.5秒静止 = 5秒
+        slideshowInterval = setInterval(nextImage, animationDuration + 4500); // 2.5秒アニメーション + 4.5秒静止 = 7秒
     }
 
     function pauseSlideshow() {
