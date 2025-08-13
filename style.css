@@ -21,10 +21,45 @@ body, html {
     align-items: center;
 }
 
-#slide-image {
+.slide-image {
+    position: absolute;
     max-width: 80%;
     max-height: 80%;
     object-fit: contain;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.slide-image.active {
+    opacity: 1;
+}
+
+@keyframes crossFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes crossFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.cross-fade-in {
+    animation: crossFadeIn 1.5s ease-in-out forwards;
+}
+
+.cross-fade-out {
+    animation: crossFadeOut 1.5s ease-in-out forwards;
+}
+
+@keyframes sepiaToNormal {
+    0% { filter: sepia(1); opacity: 0; }
+    50% { filter: sepia(1); opacity: 1; }
+    100% { filter: sepia(0); opacity: 1; }
+}
+
+.sepia-to-normal {
+    animation: sepiaToNormal 1.5s ease-in-out forwards;
 }
 
 #controls {
@@ -88,6 +123,12 @@ button:hover {
 
 #start-btn:hover {
     background-color: #45a049;
+}
+
+#random-display-text {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 10px;
 }
 
 /* 非表示にするクラス */
@@ -158,12 +199,4 @@ button:hover {
     100% { transform: scale(1.5); opacity: 0; }
 }
 
-.rotate-in {
-    animation: rotateIn 1.5s ease-in-out forwards;
-}
 
-@keyframes rotateIn {
-    0% { transform: rotate(-180deg) scale(0.5); opacity: 0; }
-    50% { transform: rotate(0deg) scale(1); opacity: 1; }
-    100% { transform: rotate(180deg) scale(0.5); opacity: 0; }
-}

@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const slideshowContainer = document.getElementById('slideshow-container');
     const controls = document.getElementById('controls');
 
-    const imageElement = document.getElementById('slide-image');
+    const currentImageElement = document.getElementById('slide-image-current');
+    const nextImageElement = document.getElementById('slide-image-next');
     const bgmElement = document.getElementById('bgm');
     const prevBtn = document.getElementById('prev-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
@@ -48,12 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let imageFiles = [...originalImageFiles]; // シャッフル用
     const bgmFile = "assets/bgm/0000.mp3";
 
-    const animationClasses = ['fade-in-out', 'slide-left', 'slide-right', 'zoom-in', 'rotate-in'];
+    const animationClasses = ['fade-in-out', 'slide-left', 'slide-right', 'zoom-in', 'sepia-to-normal'];
     const animationDuration = 1500; // CSSアニメーションのdurationと合わせる (ms)
 
     let currentImageIndex = 0;
     let isPlaying = false;
     let slideshowInterval;
+    let activeImageElement = currentImageElement; // 追加
 
     // 配列をシャッフルする関数 (Fisher-Yatesアルゴリズム)
     function shuffleArray(array) {
@@ -64,21 +66,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showImage(index) {
-        // 現在のアニメーションクラスをすべて削除
-        imageElement.className = '';
+        const nextImageSrc = imageFiles[index];
 
-        // 新しい画像を設定
-        imageElement.src = imageFiles[index];
+        // 現在表示中の画像をフェードアウトさせる
+        if (activeImageElement) {
+            activeImageElement.classList.remove('active');
+            activeImageElement.classList.remove('cross-fade-in'); // 以前のアニメーションをクリア
+            activeImageElement.classList.add('cross-fade-out');
+        }
 
-        // ランダムなアニメーションクラスを適用
+        // 次の画像要素を準備
+        const targetImageElement = (activeImageElement === currentImageElement) ? nextImageElement : currentImageElement;
+        targetImageElement.src = nextImageSrc;
+        targetImageElement.classList.remove('cross-fade-out'); // 以前のアニメーションをクリア
+        targetImageElement.classList.add('active'); // 新しい画像をアクティブにする
+
+        // ランダムなアニメーションクラスを適用 (クロスフェード以外の演出)
         const randomAnimation = animationClasses[Math.floor(Math.random() * animationClasses.length)];
-        imageElement.classList.add(randomAnimation);
+        targetImageElement.classList.add(randomAnimation);
 
         // アニメーション終了後にクラスを削除
-        imageElement.addEventListener('animationend', function handler() {
-            imageElement.classList.remove(randomAnimation);
-            imageElement.removeEventListener('animationend', handler);
+        targetImageElement.addEventListener('animationend', function handler() {
+            targetImageElement.classList.remove(randomAnimation);
+            targetImageElement.removeEventListener('animationend', handler);
         });
+
+        activeImageElement = targetImageElement; // アクティブな画像要素を更新
     }
 
     function nextImage() {
@@ -139,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
 
         // 画像をフェードアウト
-        imageElement.style.opacity = 0;
+        activeImageElement.style.opacity = 0;
         setTimeout(() => {
             slideshowContainer.classList.add('hidden');
             controls.classList.add('hidden');
@@ -149,6 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentImageIndex = 0; // インデックスをリセット
             imageFiles = [...originalImageFiles]; // 画像リストをリセット
             shuffleArray(imageFiles); // 次回のためにシャッフル
+            // 画像要素の初期状態をリセット
+            currentImageElement.classList.remove('active', 'cross-fade-out');
+            nextImageElement.classList.remove('active', 'cross-fade-out');
+            currentImageElement.style.opacity = '';
+            nextImageElement.style.opacity = '';
+            activeImageElement = currentImageElement; // activeImageElementをリセット
         }, animationDuration); // アニメーションの時間と合わせる
     }
 
