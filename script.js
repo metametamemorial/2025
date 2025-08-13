@@ -72,7 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function playSlideshow() {
         isPlaying = true;
         playPauseBtn.textContent = '❚❚';
-        bgmElement.play();
+        bgmElement.play().catch(error => {
+            console.error("BGMの再生に失敗しました:", error);
+            // ユーザーに再生ボタンを押してもらうなどの代替手段を促すメッセージを表示することも可能
+            // 例: alert("BGMの再生がブロックされました。手動で再生ボタンを押してください。");
+        });
         slideshowInterval = setInterval(nextImage, 5000); // 5秒ごとに画像を切り替え
     }
 
