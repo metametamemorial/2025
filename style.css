@@ -111,12 +111,6 @@ button:hover {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.sub-title {
-    font-size: 2em;
-    margin-bottom: 40px; /* 画像との間隔 */
-    color: #555;
-}
-
 .emoji {
     font-size: 1em; /* 親要素のフォントサイズに合わせる */
     vertical-align: middle; /* テキストと高さを合わせる */
