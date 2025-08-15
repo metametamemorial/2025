@@ -359,3 +359,13 @@ document.addEventListener('DOMContentLoaded', () => {
     applyAudioSettings();
     bgmElement.src = bgmFiles[currentBgmIndex];
 });
+
+const closeBtn = document.getElementById('close-btn');
+
+closeBtn.addEventListener('click', () => {
+    window.close();
+    // If window.close() fails, go back to the previous page.
+    if (!window.closed) {
+        history.back();
+    }
+});
