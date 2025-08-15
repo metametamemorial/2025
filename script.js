@@ -10,14 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     const muteBtn = document.getElementById('mute-btn');
     const volumeSlider = document.getElementById('volume-slider');
+    const particleContainer = document.getElementById('particle-container');
 
-    // Panes and their images
+    // Panes and Foreground Images
     const paneA = document.getElementById('pane-a');
-    const paneA_bg = paneA.querySelector('.slide-bg-image');
-    const paneA_fg = paneA.querySelector('.slide-fg-image');
     const paneB = document.getElementById('pane-b');
-    const paneB_bg = paneB.querySelector('.slide-bg-image');
-    const paneB_fg = paneB.querySelector('.slide-fg-image');
+    const fgImageA = document.getElementById('fg-image-a');
+    const fgImageB = document.getElementById('fg-image-b');
 
     // --- Data ---
     const originalImageFiles = [ // 元の画像リストを保持
@@ -65,11 +64,89 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Slideshow Settings ---
     const transitionDuration = 1500; 
     const displayDuration = 5000;
-    const animations = [
+    const mainAnimations = [
         { name: 'fade', in: 'animate-fade-in', out: 'animate-fade-out' },
         { name: 'zoom', in: 'animate-zoom-in', out: 'animate-zoom-out' },
         { name: 'blur', in: 'animate-blur-in', out: 'animate-blur-out' },
-        { name: 'iris', in: 'animate-iris-in', out: 'animate-fade-out' } // Iris reveals, fade out old
+        { name: 'iris', in: 'animate-iris-in', out: 'animate-fade-out' }
+    ];
+
+    // --- Particle Effect Settings ---
+    let particleInterval = null;
+    const particleThemes = [
+        { // A: Heart Float
+            name: 'Heart Float',
+            interval: 350,
+            emoji: ['🩷', '🩵', '💜', '💙', '💚', '💛', '🧡'],
+            generator: (emoji) => {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = emoji;
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.fontSize = `${18 + Math.random() * 20}px`;
+                p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`; // Use floatUp animation
+                return p;
+            }
+        },
+        { // B1: Circle Pop
+            name: 'Circle Pop',
+            interval: 50,
+            emoji: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'],
+            generator: (emoji) => {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = emoji;
+                p.style.left = `${10 + Math.random() * 80}vw`;
+                p.style.top = `${10 + Math.random() * 80}vh`;
+                p.style.fontSize = `${15 + Math.random() * 20}px`;
+                p.style.animation = `pop ${0.5 + Math.random() * 1}s ease-in-out forwards`;
+                return p;
+            }
+        },
+        { // B2: Square Pop
+            name: 'Square Pop',
+            interval: 50,
+            emoji: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'],
+            generator: (emoji) => {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = emoji;
+                p.style.left = `${10 + Math.random() * 80}vw`;
+                p.style.top = `${10 + Math.random() * 80}vh`;
+                p.style.fontSize = `${15 + Math.random() * 20}px`;
+                p.style.animation = `pop ${0.5 + Math.random() * 1}s ease-in-out forwards`;
+                return p;
+            }
+        },
+        { // C: Celebration Float
+            name: 'Celebration Float',
+            interval: 400,
+            emoji: ['🎈', '🌈', '✨', '🍭', '🌸', '🩷', '🧭', '🏫'],
+            generator: (emoji) => {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = emoji;
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.fontSize = `${30 + Math.random() * 25}px`;
+                p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`;
+                return p;
+            }
+        },
+        { // D: Space Drift
+            name: 'Space Drift',
+            interval: 250,
+            emoji: ['🚀', '⭐', '🪐', '🛸', '🌍', '🌙', '🌟', '☀️'],
+            generator: (emoji) => {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = emoji;
+                p.style.top = `${Math.random() * 100}vh`; // Start anywhere vertically
+                p.style.left = `${Math.random() * 100}vw`; // Start anywhere horizontally
+                p.style.fontSize = `${20 + Math.random() * 25}px`;
+                p.style.animation = `driftInSpace ${15 + Math.random() * 10}s linear forwards`;
+                return p;
+            }
+        }
     ];
 
     // --- State Variables ---
@@ -79,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let slideshowInterval;
     let isTransitioning = false;
     let activePane = paneA;
+    let activeFgImage = fgImageA;
 
     // --- Core Functions ---
 
@@ -89,37 +167,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function startParticleEffect() {
+        stopParticleEffect();
+        const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
+        
+        particleInterval = setInterval(() => {
+            const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
+            const particleElement = theme.generator(emoji);
+            particleContainer.appendChild(particleElement);
+            particleElement.addEventListener('animationend', () => {
+                particleElement.remove();
+            }, { once: true });
+        }, theme.interval);
+    }
+
+    function stopParticleEffect() {
+        clearInterval(particleInterval);
+        particleContainer.innerHTML = '';
+    }
+
     function switchImage(nextIndex) {
         if (isTransitioning) return;
         isTransitioning = true;
 
+        // --- Determine incoming/outgoing elements ---
+        const incomingPane = (activePane === paneA) ? paneB : paneA;
+        const outgoingPane = activePane;
+        const incomingFgImage = (activeFgImage === fgImageA) ? fgImageB : fgImageA;
+        const outgoingFgImage = activeFgImage;
+
+        // --- Update index ---
         if (nextIndex >= imageFiles.length) nextIndex = 0;
         if (nextIndex < 0) nextIndex = imageFiles.length - 1;
         currentImageIndex = nextIndex;
 
-        const incomingPane = (activePane === paneA) ? paneB : paneA;
-        const outgoingPane = activePane;
-        
-        // Load new images into incoming pane
-        const newImgSrc = imageFiles[currentImageIndex];
-        incomingPane.querySelector('.slide-bg-image').src = newImgSrc;
-        incomingPane.querySelector('.slide-fg-image').src = newImgSrc;
+        // --- Set new content ---
+        incomingFgImage.src = imageFiles[currentImageIndex];
 
-        const animation = animations[Math.floor(Math.random() * animations.length)];
+        // --- Run animations ---
+        // 1. Background pane transition
+        incomingPane.classList.add('active');
+        outgoingPane.classList.remove('active');
+        // 2. Particle transition
+        startParticleEffect();
+        // 3. Foreground image transition
+        const animation = mainAnimations[Math.floor(Math.random() * mainAnimations.length)];
+        outgoingFgImage.className = 'slide-fg-image';
+        incomingFgImage.className = 'slide-fg-image';
+        void outgoingFgImage.offsetWidth;
+        void incomingFgImage.offsetWidth;
+        outgoingFgImage.classList.add(animation.out);
+        incomingFgImage.classList.add(animation.in);
 
-        // Apply animations
-        incomingPane.className = 'slide-pane';
-        outgoingPane.className = 'slide-pane';
-        void incomingPane.offsetWidth; // Force reflow
-        void outgoingPane.offsetWidth;
-
-        incomingPane.classList.add(animation.in);
-        outgoingPane.classList.add(animation.out);
-
-        // After transition, clean up
+        // --- Cleanup after transition ---
         setTimeout(() => {
-            outgoingPane.className = 'slide-pane';
             activePane = incomingPane;
+            activeFgImage = incomingFgImage;
             isTransitioning = false;
         }, transitionDuration);
     }
@@ -151,20 +254,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function resetSlideshow(shouldShuffle = true) {
         pauseSlideshow();
+        stopParticleEffect();
         currentImageIndex = 0;
         if (shouldShuffle) {
             imageFiles = [...originalImageFiles];
             shuffleArray(imageFiles);
         }
         
-        // Reset panes
-        paneA.className = 'slide-pane';
-        paneB.className = 'slide-pane';
+        // Reset panes and images
+        paneA.classList.remove('active');
+        paneB.classList.remove('active');
+        fgImageA.className = 'slide-fg-image';
+        fgImageB.className = 'slide-fg-image';
+
         activePane = paneA;
-        const firstImg = imageFiles[0];
-        paneA_bg.src = firstImg;
-        paneA_fg.src = firstImg;
-        paneA.classList.add('animate-fade-in'); // Fade in the first image
+        activeFgImage = fgImageA;
+        fgImageA.src = imageFiles[0];
+        fgImageA.classList.add('animate-fade-in');
+        paneA.classList.add('active');
         
         currentBgmIndex = 0;
         bgmElement.src = bgmFiles[currentBgmIndex];
@@ -224,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
             playSlideshow();
+            startParticleEffect();
         }, 1000);
     });
 
