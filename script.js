@@ -83,50 +83,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.className = 'particle';
                 p.textContent = emoji;
                 p.style.left = `${Math.random() * 100}vw`;
-                p.style.fontSize = `${18 + Math.random() * 20}px`;
-                p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`; // Use floatUp animation
+                p.style.top = `${Math.random() * 100}vh`;
+                p.style.fontSize = `${32 + Math.random() * 32}px`;
+                // 拡大しながらフェードアウト（radialOut）
+                p.style.animation = `radialOut ${1.8 + Math.random() * 1.2}s ease-out forwards`;
                 return p;
             }
         },
         { // B1: Circle Pop
             name: 'Circle Pop',
-            interval: 50,
+            interval: 350, // 他と同じ発生量に
             emoji: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'],
             generator: (emoji) => {
                 const p = document.createElement('span');
                 p.className = 'particle';
                 p.textContent = emoji;
-                p.style.left = `${10 + Math.random() * 80}vw`;
-                p.style.top = `${10 + Math.random() * 80}vh`;
+                // 画面全体からランダム発生
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * 100}vh`;
                 p.style.fontSize = `${15 + Math.random() * 20}px`;
-                p.style.animation = `pop ${0.5 + Math.random() * 1}s ease-in-out forwards`;
+                p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`;
                 return p;
             }
         },
         { // B2: Square Pop
             name: 'Square Pop',
-            interval: 50,
+            interval: 350, // 他と同じ発生量に
             emoji: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'],
             generator: (emoji) => {
                 const p = document.createElement('span');
                 p.className = 'particle';
                 p.textContent = emoji;
-                p.style.left = `${10 + Math.random() * 80}vw`;
-                p.style.top = `${10 + Math.random() * 80}vh`;
+                // 画面全体からランダム発生
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * 100}vh`;
                 p.style.fontSize = `${15 + Math.random() * 20}px`;
-                p.style.animation = `pop ${0.5 + Math.random() * 1}s ease-in-out forwards`;
+                p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`;
                 return p;
             }
         },
         { // C: Celebration Float
             name: 'Celebration Float',
             interval: 400,
-            emoji: ['🎈', '🌈', '✨', '🍭', '🌸', '🩷', '🧭', '🏫'],
+            emoji: ['🎈', '🌈', '✨', '🍭', '🌸', '🧭', '🏫', '🫧'],
             generator: (emoji) => {
                 const p = document.createElement('span');
                 p.className = 'particle';
                 p.textContent = emoji;
                 p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * 100}vh`; // Start anywhere vertically
                 p.style.fontSize = `${30 + Math.random() * 25}px`;
                 p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`;
                 return p;
@@ -144,6 +149,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.style.left = `${Math.random() * 100}vw`; // Start anywhere horizontally
                 p.style.fontSize = `${20 + Math.random() * 25}px`;
                 p.style.animation = `driftInSpace ${15 + Math.random() * 10}s linear forwards`;
+                return p;
+            }
+        },
+        { // E: Twinkle
+            name: 'Twinkle',
+            interval: 150,
+            emoji: ['⭐', '✨'],
+            generator: (emoji) => {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                p.textContent = emoji;
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * 100}vh`;
+                p.style.fontSize = `${32 + Math.random() * 32}px`;
+                p.style.animation = `twinkle ${1.0 + Math.random() * 1.0}s ease-in-out forwards`;
                 return p;
             }
         }
