@@ -3,8 +3,8 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    background-color: #fff;
-    color: #000;
+    background-color: #000; /* Default background to black for better feel */
+    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,50 +16,65 @@ body, html {
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden; /* Crucial for cropping effects */
+}
+
+.slide-pane {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* Initially hidden */
+    /* Add padding to create a safe area and use flexbox for centering */
+    padding: 40px 40px 100px 40px;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.slide-image {
+.slide-bg-image {
     position: absolute;
-    max-width: 80%;
-    max-height: 80%;
-    object-fit: contain;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the entire pane */
+    filter: blur(20px) brightness(0.7); /* Blur and darken the background */
+    transform: scale(1.1); /* Slightly zoom to hide blur edges */
 }
 
-.slide-image.active {
-    opacity: 1;
+.slide-fg-image {
+    /* Now a flex item, not absolutely positioned inside the pane */
+    position: relative; 
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Show the full image, uncropped */
+    filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
 }
 
-@keyframes crossFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+/* --- Animation Keyframes --- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes zoomOut { from { transform: scale(1); opacity: 1; } to { transform: scale(1.2); opacity: 0; } }
+@keyframes blurIn { from { filter: blur(20px); opacity: 0; } to { filter: blur(0); opacity: 1; } }
+@keyframes blurOut { from { filter: blur(0); opacity: 1; } to { filter: blur(20px); opacity: 0; } }
+@keyframes irisIn { from { clip-path: circle(0%); } to { clip-path: circle(100%); } }
 
-@keyframes crossFadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
+/* --- Animation Classes (to be applied to .slide-pane) --- */
+.animate-fade-in { animation: fadeIn 1.5s ease-in-out forwards; }
+.animate-fade-out { animation: fadeOut 1.5s ease-in-out forwards; }
+.animate-zoom-in { animation: zoomIn 1.5s ease-in-out forwards; }
+.animate-zoom-out { animation: zoomOut 1.5s ease-in-out forwards; }
+.animate-blur-in { animation: blurIn 1.5s ease-in-out forwards; }
+.animate-blur-out { animation: blurOut 1.5s ease-in-out forwards; }
+.animate-iris-in { animation: irisIn 1.5s ease-in-out forwards; opacity: 1; }
 
-.cross-fade-in {
-    animation: crossFadeIn 1.5s ease-in-out forwards;
-}
 
-.cross-fade-out {
-    animation: crossFadeOut 1.5s ease-in-out forwards;
-}
+/* --- UI STYLES (Controls, Title, etc.) --- */
 
-@keyframes sepiaToNormal {
-    0% { filter: sepia(1); opacity: 0; }
-    50% { filter: sepia(1); opacity: 1; }
-    100% { filter: sepia(0); opacity: 1; }
-}
-
-.sepia-to-normal {
-    animation: sepiaToNormal 1.5s ease-in-out forwards;
+#controls, #audio-controls, #title-screen {
+    z-index: 1001; /* Ensure UI is on top of slideshow */
 }
 
 #controls {
@@ -67,15 +82,15 @@ body, html {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(0, 0, 0, 0.2);
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 20px;
     display: flex;
     gap: 10px;
 }
 
-button {
-    background-color: #eee;
+#controls button {
+    background-color: rgba(255, 255, 255, 0.8);
     color: #333;
     border: none;
     padding: 10px 15px;
@@ -84,34 +99,33 @@ button {
     font-size: 16px;
 }
 
-button:hover {
-    background-color: #ddd;
+#controls button:hover {
+    background-color: white;
 }
 
-/* タイトル画面 */
 #title-screen {
+    position: absolute;
     width: 100%;
     height: 100%;
     background-color: #fff;
     display: flex;
-    flex-direction: column; /* 縦並び */
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 100; /* 最前面に表示 */
-    transition: opacity 1s ease-in-out; /* フェードアウト用 */
+    transition: opacity 1s ease-in-out;
 }
 
 #title-image {
-    max-width: 80%; /* 画面幅の80% */
-    max-height: 70%; /* 画面高さの70% */
+    max-width: 80%;
+    max-height: 70%;
     object-fit: contain;
-    margin-bottom: 30px; /* ボタンとの間隔 */
+    margin-bottom: 30px;
 }
 
 #start-btn {
     font-size: 24px;
     padding: 15px 30px;
-    background-color: #4CAF50; /* 緑系の色 */
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 50px;
@@ -131,11 +145,6 @@ button:hover {
     margin-top: 10px;
 }
 
-/* 非表示にするクラス */
-.hidden {
-    display: none !important; /* !important で強制的に非表示 */
-}
-
 .title-content {
     display: flex;
     flex-direction: column;
@@ -143,62 +152,80 @@ button:hover {
     justify-content: center;
     text-align: center;
     padding: 20px;
+    color: #333;
 }
 
 .main-title {
-    font-size: 3.5em; /* 大きめのフォントサイズ */
-    margin-bottom: 10px; /* サブタイトルとの間隔 */
+    font-size: 3.5em;
+    margin-bottom: 10px;
     color: #333;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .emoji {
-    font-size: 1em; /* 親要素のフォントサイズに合わせる */
-    vertical-align: middle; /* テキストと高さを合わせる */
+    font-size: 1em;
+    vertical-align: middle;
     margin-right: 10px;
 }
 
-/* スライドショーアニメーション */
-.fade-in { animation: fadeIn 1.5s ease-in-out forwards; }
-.fade-out { animation: fadeOut 1.5s ease-in-out forwards; }
-.zoom-in { animation: zoomIn 1.5s ease-in-out forwards; }
-.zoom-out { animation: zoomOut 1.5s ease-in-out forwards; }
-.slide-in-left { animation: slideInLeft 1.5s ease-in-out forwards; }
-.slide-out-right { animation: slideOutRight 1.5s ease-in-out forwards; }
-.slide-in-right { animation: slideInRight 1.5s ease-in-out forwards; }
-.slide-out-left { animation: slideOutLeft 1.5s ease-in-out forwards; }
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-@keyframes zoomIn {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-@keyframes zoomOut {
-    from { transform: scale(1); opacity: 1; }
-    to { transform: scale(1.2); opacity: 0; }
-}
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOutRight {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOutLeft {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(-100%); opacity: 0; }
+.hidden {
+    display: none !important;
 }
 
+#audio-controls {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+#audio-controls button {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#audio-controls button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+#volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    outline: none;
+    transition: opacity 0.2s;
+}
+
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #666;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#volume-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #666;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+}

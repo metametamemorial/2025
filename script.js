@@ -1,15 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
     const titleScreen = document.getElementById('title-screen');
     const startBtn = document.getElementById('start-btn');
     const slideshowContainer = document.getElementById('slideshow-container');
     const controls = document.getElementById('controls');
-
-    const imageElement = document.getElementById('slide-image-current');
     const bgmElement = document.getElementById('bgm');
     const prevBtn = document.getElementById('prev-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
     const nextBtn = document.getElementById('next-btn');
+    const muteBtn = document.getElementById('mute-btn');
+    const volumeSlider = document.getElementById('volume-slider');
 
+    // Panes and their images
+    const paneA = document.getElementById('pane-a');
+    const paneA_bg = paneA.querySelector('.slide-bg-image');
+    const paneA_fg = paneA.querySelector('.slide-fg-image');
+    const paneB = document.getElementById('pane-b');
+    const paneB_bg = paneB.querySelector('.slide-bg-image');
+    const paneB_fg = paneB.querySelector('.slide-fg-image');
+
+    // --- Data ---
     const originalImageFiles = [ // 元の画像リストを保持
         "assets/image/a/0009.jpg", "assets/image/a/0010.jpg", "assets/image/a/0005.PNG",
         "assets/image/a/0004.PNG", "assets/image/a/0003.PNG", "assets/image/a/00002.PNG",
@@ -46,22 +56,31 @@ document.addEventListener('DOMContentLoaded', () => {
         "assets/image/a/0100.png"
     ];
     let imageFiles = [...originalImageFiles];
-    const bgmFile = "assets/bgm/0000.mp3";
-
-    const animationPairs = [
-        { in: 'fade-in', out: 'fade-out' },
-        { in: 'zoom-in', out: 'zoom-out' },
-        { in: 'slide-in-left', out: 'slide-out-right' },
-        { in: 'slide-in-right', out: 'slide-out-left' }
+    const bgmFiles = [
+        "assets/bgm/Hopeful_World.mp3",
+        "assets/bgm/明日への旅路.mp3",
+        "assets/bgm/夏が呼んでいる.mp3"
     ];
-    const animationDuration = 1500; // 1.5s
-    const staticDuration = 4500; // 4.5s
 
+    // --- Slideshow Settings ---
+    const transitionDuration = 1500; 
+    const displayDuration = 5000;
+    const animations = [
+        { name: 'fade', in: 'animate-fade-in', out: 'animate-fade-out' },
+        { name: 'zoom', in: 'animate-zoom-in', out: 'animate-zoom-out' },
+        { name: 'blur', in: 'animate-blur-in', out: 'animate-blur-out' },
+        { name: 'iris', in: 'animate-iris-in', out: 'animate-fade-out' } // Iris reveals, fade out old
+    ];
+
+    // --- State Variables ---
     let currentImageIndex = 0;
+    let currentBgmIndex = 0;
     let isPlaying = false;
     let slideshowInterval;
     let isTransitioning = false;
-    let currentAnimation = {};
+    let activePane = paneA;
+
+    // --- Core Functions ---
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -70,76 +89,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 画像を表示し、インアニメーションを適用する関数
-    function showImage(index) {
-        currentImageIndex = index;
-        imageElement.src = imageFiles[currentImageIndex];
+    function switchImage(nextIndex) {
+        if (isTransitioning) return;
+        isTransitioning = true;
 
-        // 前のアニメーションクラスを削除
-        imageElement.className = 'slide-image'; 
-        imageElement.classList.add(currentAnimation.in);
+        if (nextIndex >= imageFiles.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = imageFiles.length - 1;
+        currentImageIndex = nextIndex;
+
+        const incomingPane = (activePane === paneA) ? paneB : paneA;
+        const outgoingPane = activePane;
         
-        // アニメーション終了後にクラスを削除して静止状態にする
+        // Load new images into incoming pane
+        const newImgSrc = imageFiles[currentImageIndex];
+        incomingPane.querySelector('.slide-bg-image').src = newImgSrc;
+        incomingPane.querySelector('.slide-fg-image').src = newImgSrc;
+
+        const animation = animations[Math.floor(Math.random() * animations.length)];
+
+        // Apply animations
+        incomingPane.className = 'slide-pane';
+        outgoingPane.className = 'slide-pane';
+        void incomingPane.offsetWidth; // Force reflow
+        void outgoingPane.offsetWidth;
+
+        incomingPane.classList.add(animation.in);
+        outgoingPane.classList.add(animation.out);
+
+        // After transition, clean up
         setTimeout(() => {
-            imageElement.classList.remove(currentAnimation.in);
+            outgoingPane.className = 'slide-pane';
+            activePane = incomingPane;
             isTransitioning = false;
-        }, animationDuration);
+        }, transitionDuration);
     }
 
-    // 次の画像へ切り替える処理（アウトアニメーション -> インアニメーション）
-    function nextImage() {
-        if (isTransitioning) return;
-        isTransitioning = true;
-
-        let nextIndex = currentImageIndex + 1;
-        if (nextIndex >= imageFiles.length) {
-            endSlideshow();
-            return;
-        }
-        
-        // ランダムなアニメーションを選択
-        currentAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
-
-        // アウトアニメーションを適用
-        imageElement.classList.add(currentAnimation.out);
-
-        // アウトアニメーションが終わったら次の画像を表示
-        setTimeout(() => {
-            showImage(nextIndex);
-        }, animationDuration);
-    }
-
-    function prevImage() {
-        if (isTransitioning) return;
-        isTransitioning = true;
-
-        let prevIndex = (currentImageIndex - 1 + imageFiles.length) % imageFiles.length;
-        
-        // Prev時はシンプルなフェード
-        currentAnimation = { in: 'fade-in', out: 'fade-out' };
-
-        imageElement.classList.add(currentAnimation.out);
-
-        setTimeout(() => {
-            showImage(prevIndex);
-        }, animationDuration);
-    }
+    function nextImage() { switchImage(currentImageIndex + 1); }
+    function prevImage() { switchImage(currentImageIndex - 1); }
 
     function playSlideshow() {
+        if (isPlaying) return;
         isPlaying = true;
         playPauseBtn.textContent = '❚❚';
         bgmElement.play().catch(error => console.error("BGM Error:", error));
-        
-        // 最初の画像表示
-        isTransitioning = true;
-        currentAnimation = animationPairs[Math.floor(Math.random() * animationPairs.length)];
-        showImage(currentImageIndex);
-
-        // 定期的なスライドショーを開始
-        slideshowInterval = setInterval(nextImage, animationDuration + staticDuration + animationDuration);
+        clearInterval(slideshowInterval);
+        slideshowInterval = setInterval(nextImage, displayDuration + transitionDuration);
     }
 
     function pauseSlideshow() {
+        if (!isPlaying) return;
         isPlaying = false;
         playPauseBtn.textContent = '▶';
         bgmElement.pause();
@@ -147,53 +145,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function togglePlayPause() {
-        if (isPlaying) {
-            pauseSlideshow();
-        } else {
-            playSlideshow();
-        }
+        if (isPlaying) pauseSlideshow();
+        else playSlideshow();
     }
-
-    function endSlideshow() {
+    
+    function resetSlideshow(shouldShuffle = true) {
         pauseSlideshow();
-        let volume = bgmElement.volume;
-        const fadeOutInterval = setInterval(() => {
-            if (volume > 0.1) {
-                volume -= 0.1;
-                bgmElement.volume = volume;
-            } else {
-                bgmElement.pause();
-                bgmElement.volume = 1;
-                clearInterval(fadeOutInterval);
-            }
-        }, 100);
-
-        imageElement.classList.add('fade-out');
-        setTimeout(() => {
-            slideshowContainer.classList.add('hidden');
-            controls.classList.add('hidden');
-            titleScreen.classList.remove('hidden');
-            titleScreen.style.opacity = 1;
-            imageElement.className = 'slide-image'; // クラスをリセット
-            resetSlideshow();
-        }, animationDuration);
+        currentImageIndex = 0;
+        if (shouldShuffle) {
+            imageFiles = [...originalImageFiles];
+            shuffleArray(imageFiles);
+        }
+        
+        // Reset panes
+        paneA.className = 'slide-pane';
+        paneB.className = 'slide-pane';
+        activePane = paneA;
+        const firstImg = imageFiles[0];
+        paneA_bg.src = firstImg;
+        paneA_fg.src = firstImg;
+        paneA.classList.add('animate-fade-in'); // Fade in the first image
+        
+        currentBgmIndex = 0;
+        bgmElement.src = bgmFiles[currentBgmIndex];
     }
 
-    function resetSlideshow() {
-        currentImageIndex = 0;
-        imageFiles = [...originalImageFiles];
-        shuffleArray(imageFiles);
+    // --- BGM and Audio Controls ---
+    function playNextBgm() {
+        currentBgmIndex = (currentBgmIndex + 1) % bgmFiles.length;
+        bgmElement.src = bgmFiles[currentBgmIndex];
+        bgmElement.play().catch(error => console.error("BGM Error:", error));
+    }
+
+    function applyAudioSettings() {
+        const savedVolume = localStorage.getItem('bgmVolume');
+        const isMuted = localStorage.getItem('bgmMuted') === 'true';
+        let volumeValue = 0.1;
+        if (savedVolume !== null) volumeValue = parseFloat(savedVolume);
+        bgmElement.volume = volumeValue;
+        volumeSlider.value = volumeValue;
+        bgmElement.muted = isMuted;
+        updateMuteButton();
+    }
+
+    function updateMuteButton() {
+        if (bgmElement.muted || bgmElement.volume === 0) muteBtn.textContent = '🔇';
+        else muteBtn.textContent = '🔊';
     }
 
     // --- Event Listeners & Initialization ---
+    muteBtn.addEventListener('click', () => {
+        bgmElement.muted = !bgmElement.muted;
+        localStorage.setItem('bgmMuted', bgmElement.muted);
+        updateMuteButton();
+    });
+
+    volumeSlider.addEventListener('input', () => {
+        const newVolume = parseFloat(volumeSlider.value);
+        bgmElement.volume = newVolume;
+        localStorage.setItem('bgmVolume', newVolume.toString());
+        if (newVolume > 0 && bgmElement.muted) {
+            bgmElement.muted = false;
+            localStorage.setItem('bgmMuted', 'false');
+        }
+        updateMuteButton();
+    });
+
+    bgmElement.addEventListener('ended', playNextBgm);
     nextBtn.addEventListener('click', nextImage);
     prevBtn.addEventListener('click', prevImage);
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
-        resetSlideshow();
-        imageElement.src = imageFiles[currentImageIndex];
-
+        resetSlideshow(true);
         titleScreen.style.opacity = 0;
         setTimeout(() => {
             titleScreen.classList.add('hidden');
@@ -203,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     });
 
-    // 初期化
-    bgmElement.src = bgmFile;
+    // Initial setup on page load
+    applyAudioSettings();
+    bgmElement.src = bgmFiles[currentBgmIndex];
 });
