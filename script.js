@@ -1,4 +1,4 @@
-geminidocument.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const titleScreen = document.getElementById('title-screen');
     const startBtn = document.getElementById('start-btn');
@@ -11,6 +11,7 @@ geminidocument.addEventListener('DOMContentLoaded', () => {
     const muteBtn = document.getElementById('mute-btn');
     const volumeSlider = document.getElementById('volume-slider');
     const particleContainer = document.getElementById('particle-container');
+    const closeBtn = document.getElementById('close-btn');
 
     // Panes and Foreground Images
     const paneA = document.getElementById('pane-a');
@@ -387,4 +388,10 @@ geminidocument.addEventListener('DOMContentLoaded', () => {
     // Initial setup on page load
     applyAudioSettings();
     bgmElement.src = bgmPlaylist[currentBgmIndex];
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            window.close();
+        });
+    }
 });
