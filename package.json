@@ -1,0 +1,12 @@
+{
+  "name": "metametamemorial-slideshow",
+  "version": "1.0.0",
+  "description": "A slideshow for metametamemorial project",
+  "main": "index.js",
+  "scripts": {
+    "generate-images": "node generate-image-list.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
