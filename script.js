@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+geminidocument.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const titleScreen = document.getElementById('title-screen');
     const startBtn = document.getElementById('start-btn');
@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const muteBtn = document.getElementById('mute-btn');
     const volumeSlider = document.getElementById('volume-slider');
     const particleContainer = document.getElementById('particle-container');
-    const closeBtn = document.getElementById('close-btn');
 
     // Panes and Foreground Images
     const paneA = document.getElementById('pane-a');
@@ -368,30 +367,17 @@ document.addEventListener('DOMContentLoaded', () => {
         resetSlideshowState();
         shuffledImageFiles = [...originalImageFiles];
         shuffleArray(shuffledImageFiles);
-        
-        const firstImage = getNextImage();
-        fgImageA.src = firstImage;
-        paneA.classList.add('active');
-        activePane = paneA;
-        activeFgImage = fgImageA;
 
         titleScreen.style.opacity = 0;
         setTimeout(() => {
             titleScreen.classList.add('hidden');
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
-            playSlideshow();
-            startParticleEffect();
+            playSlideshow(); // ここで1枚目からアニメーション付きで表示
         }, 1000);
     });
 
     // Initial setup on page load
     applyAudioSettings();
     bgmElement.src = bgmPlaylist[currentBgmIndex];
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            window.close();
-        });
-    }
 });
