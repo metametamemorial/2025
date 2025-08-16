@@ -364,25 +364,47 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtn.addEventListener('click', () => { /* Previous button functionality might need re-evaluation */ });
     playPauseBtn.addEventListener('click', togglePlayPause);
 
-    startBtn.addEventListener('click', () => {
+        startBtn.addEventListener('click', () => {
+        // 状態を完全にリセット
         resetSlideshowState();
         shuffledImageFiles = [...originalImageFiles];
         shuffleArray(shuffledImageFiles);
-        
+
+        // 1枚目の画像をセットし、アニメーションを準備
         const firstImage = getNextImage();
         fgImageA.src = firstImage;
+        fgImageB.src = ''; // 念のためBは空に
+        
+        // paneとfgImageの状態を初期化
         paneA.classList.add('active');
+        paneB.classList.remove('active');
+        fgImageA.className = 'slide-fg-image'; // アニメーションクラスをリセット
+        fgImageB.className = 'slide-fg-image';
+        
+        // 1枚目をフェードインさせる
+        fgImageA.classList.add('animate-fade-in');
+
         activePane = paneA;
         activeFgImage = fgImageA;
+        isTransitioning = false; // トランジション中でないことを明示
 
+        // タイトル画面を非表示に
         titleScreen.style.opacity = 0;
         setTimeout(() => {
             titleScreen.classList.add('hidden');
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
-            playSlideshow();
+
+            // スライドショーを開始
+            isPlaying = true;
+            playPauseBtn.textContent = '❚❚';
+            bgmElement.play().catch(error => console.error("BGM Error:", error));
             startParticleEffect();
-        }, 1000);
+
+            // タイマーをクリアし、次の画像への切り替えを予約
+            clearTimeout(slideshowTimeout);
+            slideshowTimeout = setTimeout(switchImage, displayDuration);
+        }, 1000); // タイトル画面のフェードアウトを待つ
     });
 
     // Initial setup on page load
