@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+geminidocument.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const titleScreen = document.getElementById('title-screen');
     const startBtn = document.getElementById('start-btn');
@@ -54,15 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
         "assets/image/a/0097.png", "assets/image/a/0098.png", "assets/image/a/0099.png",
         "assets/image/a/0100.png"
     ];
-    let imageFiles = [...originalImageFiles];
-    const bgmFiles = [
+    let shuffledImageFiles = [];
+    const bgmPlaylist = [
         "assets/bgm/Hopeful_World.mp3",
         "assets/bgm/明日への旅路.mp3",
         "assets/bgm/夏が呼んでいる.mp3"
     ];
 
     // --- Slideshow Settings ---
-    const transitionDuration = 1500; 
+    const transitionDuration = 1500;
     const displayDuration = 5000;
     const mainAnimations = [
         { name: 'fade', in: 'animate-fade-in', out: 'animate-fade-out' },
@@ -85,20 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.style.left = `${Math.random() * 100}vw`;
                 p.style.top = `${Math.random() * 100}vh`;
                 p.style.fontSize = `${32 + Math.random() * 32}px`;
-                // 拡大しながらフェードアウト（radialOut）
                 p.style.animation = `radialOut ${1.8 + Math.random() * 1.2}s ease-out forwards`;
                 return p;
             }
         },
         { // B1: Circle Pop
             name: 'Circle Pop',
-            interval: 350, // 他と同じ発生量に
+            interval: 350,
             emoji: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'],
             generator: (emoji) => {
                 const p = document.createElement('span');
                 p.className = 'particle';
                 p.textContent = emoji;
-                // 画面全体からランダム発生
                 p.style.left = `${Math.random() * 100}vw`;
                 p.style.top = `${Math.random() * 100}vh`;
                 p.style.fontSize = `${15 + Math.random() * 20}px`;
@@ -108,13 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         { // B2: Square Pop
             name: 'Square Pop',
-            interval: 350, // 他と同じ発生量に
+            interval: 350,
             emoji: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'],
             generator: (emoji) => {
                 const p = document.createElement('span');
                 p.className = 'particle';
                 p.textContent = emoji;
-                // 画面全体からランダム発生
                 p.style.left = `${Math.random() * 100}vw`;
                 p.style.top = `${Math.random() * 100}vh`;
                 p.style.fontSize = `${15 + Math.random() * 20}px`;
@@ -131,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.className = 'particle';
                 p.textContent = emoji;
                 p.style.left = `${Math.random() * 100}vw`;
-                p.style.top = `${Math.random() * 100}vh`; // Start anywhere vertically
+                p.style.top = `${Math.random() * 100}vh`;
                 p.style.fontSize = `${30 + Math.random() * 25}px`;
                 p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`;
                 return p;
@@ -145,8 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const p = document.createElement('span');
                 p.className = 'particle';
                 p.textContent = emoji;
-                p.style.top = `${Math.random() * 100}vh`; // Start anywhere vertically
-                p.style.left = `${Math.random() * 100}vw`; // Start anywhere horizontally
+                p.style.top = `${Math.random() * 100}vh`;
+                p.style.left = `${Math.random() * 100}vw`;
                 p.style.fontSize = `${20 + Math.random() * 25}px`;
                 p.style.animation = `driftInSpace ${15 + Math.random() * 10}s linear forwards`;
                 return p;
@@ -170,10 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // --- State Variables ---
-    let currentImageIndex = 0;
     let currentBgmIndex = 0;
     let isPlaying = false;
-    let slideshowInterval;
+    let slideshowTimeout;
     let isTransitioning = false;
     let activePane = paneA;
     let activeFgImage = fgImageA;
@@ -187,10 +183,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getNextImage() {
+        if (shuffledImageFiles.length === 0) {
+            shuffledImageFiles = [...originalImageFiles];
+            shuffleArray(shuffledImageFiles);
+        }
+        return shuffledImageFiles.pop();
+    }
+
     function startParticleEffect() {
         stopParticleEffect();
         const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
-        
+
         particleInterval = setInterval(() => {
             const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
             const particleElement = theme.generator(emoji);
@@ -206,31 +210,22 @@ document.addEventListener('DOMContentLoaded', () => {
         particleContainer.innerHTML = '';
     }
 
-    function switchImage(nextIndex) {
-        if (isTransitioning) return;
+    function switchImage() {
+        if (isTransitioning || !isPlaying) return;
         isTransitioning = true;
 
-        // --- Determine incoming/outgoing elements ---
         const incomingPane = (activePane === paneA) ? paneB : paneA;
         const outgoingPane = activePane;
         const incomingFgImage = (activeFgImage === fgImageA) ? fgImageB : fgImageA;
         const outgoingFgImage = activeFgImage;
 
-        // --- Update index ---
-        if (nextIndex >= imageFiles.length) nextIndex = 0;
-        if (nextIndex < 0) nextIndex = imageFiles.length - 1;
-        currentImageIndex = nextIndex;
+        const nextImageSrc = getNextImage();
+        incomingFgImage.src = nextImageSrc;
 
-        // --- Set new content ---
-        incomingFgImage.src = imageFiles[currentImageIndex];
-
-        // --- Run animations ---
-        // 1. Background pane transition
         incomingPane.classList.add('active');
         outgoingPane.classList.remove('active');
-        // 2. Particle transition
         startParticleEffect();
-        // 3. Foreground image transition
+
         const animation = mainAnimations[Math.floor(Math.random() * mainAnimations.length)];
         outgoingFgImage.className = 'slide-fg-image';
         incomingFgImage.className = 'slide-fg-image';
@@ -239,24 +234,23 @@ document.addEventListener('DOMContentLoaded', () => {
         outgoingFgImage.classList.add(animation.out);
         incomingFgImage.classList.add(animation.in);
 
-        // --- Cleanup after transition ---
         setTimeout(() => {
             activePane = incomingPane;
             activeFgImage = incomingFgImage;
             isTransitioning = false;
+            if (isPlaying) {
+                slideshowTimeout = setTimeout(switchImage, displayDuration + transitionDuration);
+            }
         }, transitionDuration);
     }
-
-    function nextImage() { switchImage(currentImageIndex + 1); }
-    function prevImage() { switchImage(currentImageIndex - 1); }
 
     function playSlideshow() {
         if (isPlaying) return;
         isPlaying = true;
         playPauseBtn.textContent = '❚❚';
         bgmElement.play().catch(error => console.error("BGM Error:", error));
-        clearInterval(slideshowInterval);
-        slideshowInterval = setInterval(nextImage, displayDuration + transitionDuration);
+        clearTimeout(slideshowTimeout);
+        slideshowTimeout = setTimeout(switchImage, displayDuration);
     }
 
     function pauseSlideshow() {
@@ -264,44 +258,67 @@ document.addEventListener('DOMContentLoaded', () => {
         isPlaying = false;
         playPauseBtn.textContent = '▶';
         bgmElement.pause();
-        clearInterval(slideshowInterval);
+        clearTimeout(slideshowTimeout);
     }
 
     function togglePlayPause() {
         if (isPlaying) pauseSlideshow();
         else playSlideshow();
     }
-    
-    function resetSlideshow(shouldShuffle = true) {
+
+    function endSlideshow() {
         pauseSlideshow();
         stopParticleEffect();
-        currentImageIndex = 0;
-        if (shouldShuffle) {
-            imageFiles = [...originalImageFiles];
-            shuffleArray(imageFiles);
-        }
+
+        const whiteout = document.createElement('div');
+        whiteout.style.position = 'fixed';
+        whiteout.style.top = '0';
+        whiteout.style.left = '0';
+        whiteout.style.width = '100vw';
+        whiteout.style.height = '100vh';
+        whiteout.style.backgroundColor = 'white';
+        whiteout.style.opacity = '0';
+        whiteout.style.zIndex = '10000';
+        whiteout.style.transition = 'opacity 1.5s ease-in';
+        document.body.appendChild(whiteout);
+
+        setTimeout(() => {
+            whiteout.style.opacity = '1';
+        }, 100);
+
+        setTimeout(() => {
+            slideshowContainer.classList.add('hidden');
+            controls.classList.add('hidden');
+            titleScreen.classList.remove('hidden');
+            titleScreen.style.opacity = '1';
+            document.body.removeChild(whiteout);
+            resetSlideshowState();
+        }, 2000);
+    }
+    
+    function resetSlideshowState() {
+        isPlaying = false;
+        shuffledImageFiles = [];
+        currentBgmIndex = 0;
+        bgmElement.src = bgmPlaylist[currentBgmIndex];
         
-        // Reset panes and images
         paneA.classList.remove('active');
         paneB.classList.remove('active');
         fgImageA.className = 'slide-fg-image';
         fgImageB.className = 'slide-fg-image';
-
         activePane = paneA;
         activeFgImage = fgImageA;
-        fgImageA.src = imageFiles[0];
-        fgImageA.classList.add('animate-fade-in');
-        paneA.classList.add('active');
-        
-        currentBgmIndex = 0;
-        bgmElement.src = bgmFiles[currentBgmIndex];
     }
 
     // --- BGM and Audio Controls ---
     function playNextBgm() {
-        currentBgmIndex = (currentBgmIndex + 1) % bgmFiles.length;
-        bgmElement.src = bgmFiles[currentBgmIndex];
-        bgmElement.play().catch(error => console.error("BGM Error:", error));
+        currentBgmIndex++;
+        if (currentBgmIndex >= bgmPlaylist.length) {
+            endSlideshow();
+        } else {
+            bgmElement.src = bgmPlaylist[currentBgmIndex];
+            bgmElement.play().catch(error => console.error("BGM Error:", error));
+        }
     }
 
     function applyAudioSettings() {
@@ -339,12 +356,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     bgmElement.addEventListener('ended', playNextBgm);
-    nextBtn.addEventListener('click', nextImage);
-    prevBtn.addEventListener('click', prevImage);
+    nextBtn.addEventListener('click', () => {
+        clearTimeout(slideshowTimeout);
+        switchImage();
+    });
+    prevBtn.addEventListener('click', () => { /* Previous button functionality might need re-evaluation */ });
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
-        resetSlideshow(true);
+        resetSlideshowState();
+        shuffledImageFiles = [...originalImageFiles];
+        shuffleArray(shuffledImageFiles);
+        
+        const firstImage = getNextImage();
+        fgImageA.src = firstImage;
+        paneA.classList.add('active');
+        activePane = paneA;
+        activeFgImage = fgImageA;
+
         titleScreen.style.opacity = 0;
         setTimeout(() => {
             titleScreen.classList.add('hidden');
@@ -357,15 +386,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial setup on page load
     applyAudioSettings();
-    bgmElement.src = bgmFiles[currentBgmIndex];
-});
-
-const closeBtn = document.getElementById('close-btn');
-
-closeBtn.addEventListener('click', () => {
-    window.close();
-    // If window.close() fails, go back to the previous page.
-    if (!window.closed) {
-        history.back();
-    }
+    bgmElement.src = bgmPlaylist[currentBgmIndex];
 });
