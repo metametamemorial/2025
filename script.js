@@ -57,9 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     let shuffledImageFiles = [];
     const bgmPlaylist = [
-        "assets/bgm/Hopeful_World.mp3",
-        "assets/bgm/明日への旅路.mp3",
-        "assets/bgm/夏が呼んでいる.mp3"
+        "assets/bgm/0000.mp3"
     ];
 
     // --- Slideshow Settings ---
