@@ -192,15 +192,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startParticleEffect() {
         stopParticleEffect();
+        // particleContainerが存在しない場合は処理を中断
+        if (!particleContainer) {
+            console.error("particleContainer not found. Particle effect cannot start.");
+            return;
+        }
         const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
 
         particleInterval = setInterval(() => {
             const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
             const particleElement = theme.generator(emoji);
-            particleContainer.appendChild(particleElement);
-            particleElement.addEventListener('animationend', () => {
-                particleElement.remove();
-            }, { once: true });
+            // particleElementがnullでないことを確認
+            if (particleElement) {
+                particleContainer.appendChild(particleElement);
+                particleElement.addEventListener('animationend', () => {
+                    particleElement.remove();
+                }, { once: true });
+            } else {
+                console.error("Failed to create particleElement.");
+            }
         }, theme.interval);
     }
 
