@@ -20,42 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fgImageB = document.getElementById('fg-image-b');
 
     // --- Data ---
-    const originalImageFiles = [ // 元の画像リストを保持
-        "assets/image/a/0009.jpg", "assets/image/a/0010.jpg", "assets/image/a/0005.PNG",
-        "assets/image/a/0004.PNG", "assets/image/a/0003.PNG", "assets/image/a/00002.PNG",
-        "assets/image/a/0001.png", "assets/image/a/0011.png", "assets/image/a/0012.png",
-        "assets/image/a/0013.png", "assets/image/a/0014.png", "assets/image/a/0015.png",
-        "assets/image/a/0016.png", "assets/image/a/0017.png", "assets/image/a/0018.png",
-        "assets/image/a/0019.png", "assets/image/a/0020.png", "assets/image/a/0021.png",
-        "assets/image/a/0022.png", "assets/image/a/0023.png", "assets/image/a/0024.png",
-        "assets/image/a/0025.png", "assets/image/a/0026.png", "assets/image/a/0027.png",
-        "assets/image/a/0028.png", "assets/image/a/0029.png", "assets/image/a/0030.png",
-        "assets/image/a/0031.png", "assets/image/a/0032.png", "assets/image/a/0033.png",
-        "assets/image/a/0034.png", "assets/image/a/0035.png", "assets/image/a/0036.png",
-        "assets/image/a/0037.png", "assets/image/a/0038.png", "assets/image/a/0039.png",
-        "assets/image/a/0040.png", "assets/image/a/0041.png", "assets/image/a/0042.png",
-        "assets/image/a/0043.png", "assets/image/a/0044.png", "assets/image/a/0045.png",
-        "assets/image/a/0046.png", "assets/image/a/0047.png", "assets/image/a/0048.png",
-        "assets/image/a/0049.png", "assets/image/a/0050.png", "assets/image/a/0051.png",
-        "assets/image/a/0052.png", "assets/image/a/0053.png", "assets/image/a/0054.png",
-        "assets/image/a/0055.jpg", "assets/image/a/0056.jpg", "assets/image/a/0057.jpg",
-        "assets/image/a/0058.jpg", "assets/image/a/0059.png", "assets/image/a/0060.jpg",
-        "assets/image/a/0061.jpg", "assets/image/a/0062.jpg", "assets/image/a/0063.jpg",
-        "assets/image/a/0064.jpg", "assets/image/a/0065.jpg", "assets/image/a/0066.jpg",
-        "assets/image/a/0067.jpg", "assets/image/a/0068.jpg", "assets/image/a/0069.jpg",
-        "assets/image/a/0070.jpg", "assets/image/a/0071.jpg", "assets/image/a/0072.jpg",
-        "assets/image/a/0073.jpg", "assets/image/a/0074.jpg", "assets/image/a/0075.jpg",
-        "assets/image/a/0076.jpg", "assets/image/a/0077.png", "assets/image/a/0078.png",
-        "assets/image/a/0079.png", "assets/image/a/0080.png", "assets/image/a/0081.png",
-        "assets/image/a/0082.png", "assets/image/a/0083.png", "assets/image/a/0084.png",
-        "assets/image/a/0085.png", "assets/image/a/0086.png", "assets/image/a/0087.png",
-        "assets/image/a/0088.png", "assets/image/a/0089.png", "assets/image/a/0090.png",
-        "assets/image/a/0091.png", "assets/image/a/0092.png", "assets/image/a/0093.png",
-        "assets/image/a/0094.png", "assets/image/a/0095.png", "assets/image/a/0096.png",
-        "assets/image/a/0097.png", "assets/image/a/0098.png", "assets/image/a/0099.png",
-        "assets/image/a/0100.png"
-    ];
-    let shuffledImageFiles = [];
+    const imageBaseUrl = 'https://raw.githubusercontent.com/metametamemorial2025-tech/2025/main/assets/';
+    let imagePlaylist = [];
+    let currentImageIndex = 0;
+
     const bgmPlaylist = [
         "assets/bgm/0000.mp3"
     ];
@@ -183,11 +151,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getNextImage() {
-        if (shuffledImageFiles.length === 0) {
-            shuffledImageFiles = [...originalImageFiles];
-            shuffleArray(shuffledImageFiles);
+        if (currentImageIndex >= imagePlaylist.length) {
+            currentImageIndex = 0; // Loop back to the beginning
         }
-        return shuffledImageFiles.pop();
+        const imageName = imagePlaylist[currentImageIndex];
+        currentImageIndex++;
+        return imageBaseUrl + imageName;
     }
 
     function startParticleEffect() {
@@ -307,7 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function resetSlideshowState() {
         isPlaying = false;
-        shuffledImageFiles = [];
+        imagePlaylist = [];
+        currentImageIndex = 0;
         currentBgmIndex = 0;
         bgmElement.src = bgmPlaylist[currentBgmIndex];
         
@@ -375,8 +345,12 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.addEventListener('click', () => {
         // 状態を完全にリセット
         resetSlideshowState();
-        shuffledImageFiles = [...originalImageFiles];
-        shuffleArray(shuffledImageFiles);
+
+        // 画像プレイリストを作成
+        const startImages = ['0001.jpg', '0002.jpg', '0003.jpg'];
+        let middleImages = window.allImages.filter(img => !startImages.includes(img));
+        shuffleArray(middleImages);
+        imagePlaylist = [...startImages, ...middleImages];
 
         // 1枚目の画像をセットし、アニメーションを準備
         const firstImage = getNextImage();
