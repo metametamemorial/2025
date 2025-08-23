@@ -12,7 +12,7 @@ fs.readdir(imagesDir, (err, files) => {
     }
 
     const imageFiles = files.filter(file => {
-        return imageExtensions.includes(path.extname(file));
+        return imageExtensions.includes(path.extname(file)) && !file.startsWith('001.');
     }).sort();
 
     const imagePaths = imageFiles.map(file => `'assets/image/a/${file}'`);

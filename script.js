@@ -63,15 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function parseImageInfo(imagePath) {
         const filename = imagePath.split('/').pop();
-        const parts = filename.split('_');
-        if (parts.length < 3) return null;
+        const match = filename.match(/(.*?)_(\d{4}-\d{2}-\d{2})_/);
 
-        let account = parts[0];
-        if (filename.startsWith('__')) account = `__${parts[2]}`;
-        else if (filename.startsWith('_')) account = `_${parts[1]}`;
-
-        const datePart = parts.find(p => p.match(/^\d{4}-\d{2}-\d{2}$/));
-        return datePart ? { account, date: datePart } : null;
+        if (match && match[1] && match[2]) {
+            const account = match[1];
+            const date = match[2];
+            return { account, date };
+        }
+        return null;
     }
 
     function updateImageInfo(imagePath) {

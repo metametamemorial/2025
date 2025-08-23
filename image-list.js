@@ -1,6 +1,5 @@
 const originalImageFiles = [
     'assets/image/a/0009.jpg',
-    'assets/image/a/001.png',
     'assets/image/a/0010.jpg',
     'assets/image/a/0011.png',
     'assets/image/a/0041.png',
