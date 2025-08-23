@@ -25,7 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let imagePlaylist = [];
     let randomImagePool = [];
     let currentImageIndex = 0;
-    const bgmPlaylist = ["assets/bgm/0000.mp3"];
+    const bgmPlaylist = [
+        "assets/bgm/Hopeful_World.mp3",
+        "assets/bgm/夏が呼んでいる.mp3",
+        "assets/bgm/明日への旅路.mp3"
+    ];
+    let currentBgmIndex = 0;
 
     // --- Slideshow Settings ---
     const transitionDuration = 1500;
@@ -225,19 +230,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pauseSlideshow();
         if (particleContainer) particleContainer.innerHTML = '';
 
-
-        const displayFinalImage = () => {
-            showSlide(imagePlaylist.push(fixedEndImage) - 1);
+        const performWhiteout = () => {
+            whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
+            whiteoutDiv.style.opacity = '1';
             setTimeout(() => {
-                whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
-                whiteoutDiv.style.opacity = '1';
-                setTimeout(() => {
-                    slideshowContainer.classList.add('hidden');
-                    uiContainer.classList.add('hidden');
-                    titleScreen.classList.remove('hidden');
-                    resetSlideshowState();
-                }, 1500);
-            }, finalImageDuration);
+                slideshowContainer.classList.add('hidden');
+                uiContainer.classList.add('hidden');
+                titleScreen.classList.remove('hidden');
+                resetSlideshowState();
+            }, 1500);
         };
 
         if (isManual) {
@@ -250,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  resetSlideshowState();
             }, 500);
         } else {
-            displayFinalImage();
+            performWhiteout();
         }
     }
 
@@ -313,6 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
         imageInfoDiv.style.opacity = '0';
         titleScreen.style.opacity = '1';
         if (particleContainer) particleContainer.innerHTML = '';
+        currentBgmIndex = 0;
+        bgmElement.src = bgmPlaylist[currentBgmIndex];
     }
 
     function applyAudioSettings() {
@@ -349,7 +352,15 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMuteButton();
     });
 
-    bgmElement.addEventListener('ended', finishSlideshow);
+    bgmElement.addEventListener('ended', () => {
+        currentBgmIndex++;
+        if (currentBgmIndex < bgmPlaylist.length) {
+            bgmElement.src = bgmPlaylist[currentBgmIndex];
+            bgmElement.play().catch(error => console.error("BGM Error:", error));
+        } else {
+            finishSlideshow();
+        }
+    });
     nextBtn.addEventListener('click', () => manualChangeSlide(1));
     prevBtn.addEventListener('click', () => manualChangeSlide(-1));
     homeBtn.addEventListener('click', () => finishSlideshow(true));
@@ -392,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
             slideshowContainer.classList.remove('hidden');
             uiContainer.classList.remove('hidden');
             
+            bgmElement.src = bgmPlaylist[0];
             playSlideshow();
 
             setTimeout(() => {
