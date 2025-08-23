@@ -2,4 +2,4 @@
 
 ## サイトURL
 
-https://asarigirl.github.io/metametamemorial
+https://metametamemorial.github.io/2025/
