@@ -222,7 +222,34 @@ body, html {
 
 .hidden { display: none !important; }
 
+.balloon-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 1005;
+}
+
+@keyframes balloon-float {
+    from {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-110vh) translateX(var(--x-drift)) rotate(var(--r-end));
+        opacity: 0;
+    }
+}
+
+
 @media (max-width: 768px) {
     .slide-fg-image { height: 75%; top: 5%; }
     #ui-container { width: calc(100% - 20px); bottom: 10px; }
+}
+
+@media (max-width: 480px) {
+    .slide-fg-image { height: 70%; top: 5%; }
+    #ui-container { flex-direction: column; }
+    .controls-row { flex-direction: column; gap: 10px; }
 }
