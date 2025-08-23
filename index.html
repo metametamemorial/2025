@@ -15,10 +15,8 @@
 
     <div id="title-screen">
         <div class="title-content">
-            
             <img id="title-image" src="assets/logo/001.png" alt="タイトル">
             <button id="start-btn">START</button>
-            <p id="random-display-text">ランダム表示</p>
         </div>
     </div>
 
@@ -30,20 +28,30 @@
         <div id="particle-container"></div>
         <audio id="bgm"></audio>
     </div>
+
+    <!-- UI Container -->
+    <div id="ui-container" class="hidden">
+        <div id="image-info"></div>
+        <div class="controls-row">
+            <div id="controls">
+                <button id="home-btn">🏠</button>
+                <button id="prev-btn">⏪</button>
+                <button id="play-pause-btn">▶️</button>
+                <button id="next-btn">⏩</button>
+            </div>
+            <div id="audio-controls">
+                <button id="mute-btn">🔊</button>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+    </div>
+
+    <div id="contact-link">
+        <a href="https://x.com/asari_girl" target="_blank">連絡先</a>
+    </div>
+
     <div id="whiteout"></div>
-    <div id="controls" class="hidden">
-        <button id="home-btn">🏠</button>
-        <button id="prev-btn">⏪</button>
-        <button id="play-pause-btn">▶️</button>
-        <button id="next-btn">⏩</button>
-    </div>
 
-    <div id="audio-controls">
-        <button id="mute-btn">🔊</button>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
-    </div>
-
-    <script src="image-list.js"></script>
     <script src="image-list.js"></script>
     <script src="script.js"></script>
 </body>

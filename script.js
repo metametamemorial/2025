@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleScreen = document.getElementById('title-screen');
     const startBtn = document.getElementById('start-btn');
     const slideshowContainer = document.getElementById('slideshow-container');
-    const controls = document.getElementById('controls');
+    const uiContainer = document.getElementById('ui-container');
     const bgmElement = document.getElementById('bgm');
     const prevBtn = document.getElementById('prev-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const particleContainer = document.getElementById('particle-container');
     const closeBtn = document.getElementById('close-btn');
     const whiteoutDiv = document.getElementById('whiteout');
+    const imageInfoDiv = document.getElementById('image-info');
 
     const paneA = document.getElementById('pane-a');
     const paneB = document.getElementById('pane-b');
@@ -28,25 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Slideshow Settings ---
     const transitionDuration = 1500;
-    const slideDuration = 2000; // 2 seconds for all images except the last
-    const finalImageDuration = 4000; // 4 seconds for the last image
+    const slideDuration = 2000;
+    const finalImageDuration = 4000;
 
     const mainAnimations = [
         { name: 'fade', in: 'animate-fade-in', out: 'animate-fade-out' },
         { name: 'zoom', in: 'animate-zoom-in', out: 'animate-zoom-out' },
-        { name: 'blur', in: 'animate-blur-in', out: 'animate-blur-out' },
-        { name: 'iris', in: 'animate-iris-in', out: 'animate-fade-out' }
-    ];
-
-    // --- Particle Effect Settings ---
-    let particleInterval = null;
-    const particleThemes = [
-        { name: 'Heart Float', interval: 350, emoji: ['🩷', '🩵', '💜', '💙', '💚', '💛', '🧡'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${32 + Math.random() * 32}px`; p.style.animation = `radialOut ${1.8 + Math.random() * 1.2}s ease-out forwards`; return p; } },
-        { name: 'Circle Pop', interval: 350, emoji: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${15 + Math.random() * 20}px`; p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`; return p; } },
-        { name: 'Square Pop', interval: 350, emoji: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${15 + Math.random() * 20}px`; p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`; return p; } },
-        { name: 'Celebration Float', interval: 400, emoji: ['🎈', '🌈', '✨', '🍭', '🌸', '🧭', '🏫', '🫧'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${30 + Math.random() * 25}px`; p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`; return p; } },
-        { name: 'Space Drift', interval: 250, emoji: ['🚀', '⭐', '🪐', '🛸', '🌍', '🌙', '🌟', '☀️'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.top = `${Math.random() * 100}vh`; p.style.left = `${Math.random() * 100}vw`; p.style.fontSize = `${20 + Math.random() * 25}px`; p.style.animation = `driftInSpace ${15 + Math.random() * 10}s linear forwards`; return p; } },
-        { name: 'Twinkle', interval: 150, emoji: ['⭐', '✨'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${32 + Math.random() * 32}px`; p.style.animation = `twinkle ${1.0 + Math.random() * 1.0}s ease-in-out forwards`; return p; } }
     ];
 
     // --- State Variables ---
@@ -73,6 +61,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Core Functions ---
 
+    function parseImageInfo(imagePath) {
+        const filename = imagePath.split('/').pop();
+        const parts = filename.split('_');
+        if (parts.length < 3) return null;
+
+        let account = parts[0];
+        if (filename.startsWith('__')) account = `__${parts[2]}`;
+        else if (filename.startsWith('_')) account = `_${parts[1]}`;
+
+        const datePart = parts.find(p => p.match(/^\d{4}-\d{2}-\d{2}$/));
+        return datePart ? { account, date: datePart } : null;
+    }
+
+    function updateImageInfo(imagePath) {
+        const info = parseImageInfo(imagePath);
+        if (info) {
+            const accountUrl = `https://x.com/${info.account.replace(/^_+/, '')}`;
+            imageInfoDiv.innerHTML = `<a href="${accountUrl}" target="_blank">@${info.account}</a><br>${info.date}`;
+            imageInfoDiv.style.opacity = '1';
+        } else {
+            imageInfoDiv.style.opacity = '0';
+        }
+    }
+
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -80,35 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function startParticleEffect() {
-        stopParticleEffect();
-        if (!particleContainer) return;
-        const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
-        particleInterval = setInterval(() => {
-            const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
-            const particleElement = theme.generator(emoji);
-            if (particleElement) {
-                particleContainer.appendChild(particleElement);
-                particleElement.addEventListener('animationend', () => particleElement.remove(), { once: true });
-            }
-        }, theme.interval);
-    }
-
-    function stopParticleEffect() {
-        clearInterval(particleInterval);
-        if(particleContainer) particleContainer.innerHTML = '';
-    }
-
-    function showSlide(newIndex, manual = false) {
+    function showSlide(newIndex) {
         if (isTransitioning) return;
         isTransitioning = true;
-        
         currentImageIndex = newIndex;
+        const currentImage = imagePlaylist[currentImageIndex];
 
         const incomingPane = (activePane === paneA) ? paneB : paneA;
         const incomingFgImage = (activeFgImage === fgImageA) ? fgImageB : fgImageA;
 
-        incomingFgImage.src = imagePlaylist[currentImageIndex];
+        incomingFgImage.src = currentImage;
+        updateImageInfo(currentImage);
 
         incomingPane.classList.add('active');
         activePane.classList.remove('active');
@@ -121,28 +115,23 @@ document.addEventListener('DOMContentLoaded', () => {
         activeFgImage.classList.add(animation.out);
         incomingFgImage.classList.add(animation.in);
 
-        if (!manual) startParticleEffect();
-
         setTimeout(() => {
             activePane = incomingPane;
             activeFgImage = incomingFgImage;
             isTransitioning = false;
-            if (isPlaying && !manual) {
-                scheduleNextSlide();
-            }
         }, transitionDuration);
     }
 
     function scheduleNextSlide() {
         clearTimeout(slideshowTimeout);
-        if (isBgmFinished) return;
+        if (isBgmFinished || !isPlaying) return;
         slideshowTimeout = setTimeout(() => {
             let nextIndex = currentImageIndex + 1;
-            // If we are past the fixed images, loop within the random part
             if (nextIndex >= imagePlaylist.length) {
                 nextIndex = fixedStartImages.length;
             }
             showSlide(nextIndex);
+            scheduleNextSlide(); 
         }, slideDuration);
     }
 
@@ -151,25 +140,24 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(slideshowTimeout);
         pauseSlideshow();
 
-        // Show the final image
-        showSlide(imagePlaylist.push(fixedEndImage) - 1, true);
+        const finalPlaylist = [...imagePlaylist, fixedEndImage];
+        showSlide(finalPlaylist.length - 1);
+        imagePlaylist = finalPlaylist;
 
-        // Wait for the final image duration, then whiteout
         setTimeout(() => {
             whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
             whiteoutDiv.style.opacity = '1';
             setTimeout(() => {
                 slideshowContainer.classList.add('hidden');
-                controls.classList.add('hidden');
+                uiContainer.classList.add('hidden');
                 titleScreen.classList.remove('hidden');
-                titleScreen.style.opacity = '1';
                 resetSlideshowState();
-            }, 1500); // Wait for whiteout transition
+            }, 1500);
         }, finalImageDuration);
     }
 
     function playSlideshow() {
-        if (isPlaying) return;
+        if (isPlaying || isBgmFinished) return;
         isPlaying = true;
         playPauseBtn.textContent = '⏸️';
         bgmElement.play().catch(error => console.error("BGM Error:", error));
@@ -186,10 +174,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function togglePlayPause() {
         if (isBgmFinished) return;
+        if (isPlaying) pauseSlideshow();
+        else playSlideshow();
+    }
+
+    function manualChangeSlide(direction) {
+        if (isTransitioning || isBgmFinished) return;
+        clearTimeout(slideshowTimeout);
+        let nextIndex = currentImageIndex + direction;
+
+        if (nextIndex < 0) nextIndex = imagePlaylist.length - 1;
+        else if (nextIndex >= imagePlaylist.length) nextIndex = 0;
+        
+        showSlide(nextIndex);
+
         if (isPlaying) {
-            pauseSlideshow();
-        } else {
-            playSlideshow();
+            scheduleNextSlide();
         }
     }
 
@@ -204,19 +204,19 @@ document.addEventListener('DOMContentLoaded', () => {
         paneB.classList.remove('active');
         fgImageA.src = '';
         fgImageB.src = '';
-        fgImageA.className = 'slide-fg-image';
-        fgImageB.className = 'slide-fg-image';
         activePane = paneA;
         activeFgImage = fgImageA;
         whiteoutDiv.style.transition = 'none';
         whiteoutDiv.style.opacity = '0';
         playPauseBtn.textContent = '▶️';
+        imageInfoDiv.style.opacity = '0';
+        titleScreen.style.opacity = '1';
     }
 
     function applyAudioSettings() {
         const savedVolume = localStorage.getItem('bgmVolume');
         const isMuted = localStorage.getItem('bgmMuted') === 'true';
-        let volumeValue = 0.1;
+        let volumeValue = 0.5;
         if (savedVolume !== null) volumeValue = parseFloat(savedVolume);
         bgmElement.volume = volumeValue;
         volumeSlider.value = volumeValue;
@@ -248,73 +248,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     bgmElement.addEventListener('ended', finishSlideshow);
-
-    nextBtn.addEventListener('click', () => {
-        if (isBgmFinished || isTransitioning) return;
-        clearTimeout(slideshowTimeout);
-        let nextIndex = currentImageIndex + 1;
-        if (nextIndex >= imagePlaylist.length) {
-            nextIndex = fixedStartImages.length; // Loop back to random part
-        }
-        showSlide(nextIndex, true);
-    });
-
-    prevBtn.addEventListener('click', () => {
-        if (isBgmFinished || isTransitioning || currentImageIndex <= 0) return;
-        clearTimeout(slideshowTimeout);
-        showSlide(currentImageIndex - 1, true);
-    });
-
-    homeBtn.addEventListener('click', () => {
-        clearTimeout(slideshowTimeout);
-        bgmElement.pause();
-        finishSlideshow();
-    });
-
+    nextBtn.addEventListener('click', () => manualChangeSlide(1));
+    prevBtn.addEventListener('click', () => manualChangeSlide(-1));
+    homeBtn.addEventListener('click', () => finishSlideshow(true));
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
-        resetSlideshowState();
+        whiteoutDiv.style.transition = 'opacity 0.5s ease-in-out';
+        whiteoutDiv.style.opacity = '1';
 
-        const allFixedImages = [...fixedStartImages, fixedEndImage];
-        randomImagePool = originalImageFiles.filter(img => !allFixedImages.includes(img));
-        shuffleArray(randomImagePool);
-        imagePlaylist = [...fixedStartImages, ...randomImagePool];
-
-        currentImageIndex = 0;
-        const firstImage = imagePlaylist[currentImageIndex];
-        if (!firstImage) return;
-
-        fgImageA.src = firstImage;
-        fgImageB.src = '';
-        paneA.classList.add('active');
-        paneB.classList.remove('active');
-        fgImageA.className = 'slide-fg-image animate-fade-in';
-        fgImageB.className = 'slide-fg-image';
-        
-        activePane = paneA;
-        activeFgImage = fgImageA;
-        isTransitioning = false;
-
-        titleScreen.style.opacity = 0;
         setTimeout(() => {
+            resetSlideshowState();
+
+            const allFixedImages = [...fixedStartImages, fixedEndImage];
+            randomImagePool = originalImageFiles.filter(img => !allFixedImages.includes(img));
+            shuffleArray(randomImagePool);
+            imagePlaylist = [...fixedStartImages, ...randomImagePool];
+
+            currentImageIndex = 0;
+            const firstImage = imagePlaylist[currentImageIndex];
+            if (!firstImage) return;
+
+            fgImageA.src = firstImage;
+            updateImageInfo(firstImage);
+            fgImageB.src = '';
+            paneA.classList.add('active');
+            paneB.classList.remove('active');
+            fgImageA.className = 'slide-fg-image animate-fade-in';
+            fgImageB.className = 'slide-fg-image';
+            
+            activePane = fgImageA;
+            activeFgImage = fgImageA;
+            isTransitioning = false;
+
             titleScreen.classList.add('hidden');
             slideshowContainer.classList.remove('hidden');
-            controls.classList.remove('hidden');
+            uiContainer.classList.remove('hidden');
             
             playSlideshow();
-            startParticleEffect();
-        }, 1000);
+
+            setTimeout(() => {
+                whiteoutDiv.style.opacity = '0';
+            }, 100);
+
+        }, 500);
     });
 
-    // This might not work in all browsers due to security restrictions.
     if (closeBtn) {
         closeBtn.addEventListener('click', () => window.close());
     }
 
-    // Initial setup
     applyAudioSettings();
     bgmElement.src = bgmPlaylist[0];
 });
-
-

@@ -1,5 +1,5 @@
 html {
-    font-size: 14px; /* Base font size for rem units */
+    font-size: 14px;
 }
 
 body, html {
@@ -23,7 +23,6 @@ body, html {
     overflow: hidden;
 }
 
-/* --- Background Panes (White) --- */
 .slide-pane {
     position: absolute;
     top: 0; left: 0;
@@ -34,47 +33,33 @@ body, html {
     transition: opacity 1.5s ease-in-out;
 }
 
-.slide-pane.active {
-    opacity: 1;
-}
+.slide-pane.active { opacity: 1; }
 
-/* --- Foreground Images (The main photo) --- */
 .slide-fg-image {
     position: absolute;
-    /* Defines the "safe area" away from controls */
     top: 5%;
     left: 5%;
     width: 90%;
-    height: 80%; 
+    height: 80%;
     object-fit: contain;
     filter: drop-shadow(0 0 15px rgba(0,0,0,0.4));
-    opacity: 0; /* Controlled by animation */
+    opacity: 0;
     transform: scale(1);
     z-index: 10;
 }
 
-/* --- Particle Animation Styles --- */
 #particle-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
     overflow: hidden;
-    z-index: 5; /* Above white panes, below foreground image */
+    z-index: 5;
 }
 
-.particle {
-    position: absolute;
-    opacity: 0;
-    font-size: 16px;
-    text-shadow: 0 0 5px rgba(255,255,255,0.5);
-}
+.particle { position: absolute; opacity: 0; font-size: 16px; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
 
-/* --- Animation Keyframes --- */
-
-/* For Foreground Images */
+/* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { transform: scale(1); opacity: 1; } }
@@ -82,40 +67,12 @@ body, html {
 @keyframes blurIn { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } }
 @keyframes blurOut { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } }
 @keyframes irisIn { from { clip-path: circle(0%); } to { clip-path: circle(100%); } }
+@keyframes floatUp { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; } }
+@keyframes pop { 0% { transform: scale(0) rotate(0deg); opacity: 1; } 30% { transform: scale(1.2) rotate(108deg); } 60% { transform: scale(0.8) rotate(216deg); } 100% { transform: scale(1) rotate(360deg); opacity: 0; } }
+@keyframes driftInSpace { 0% { transform: translateX(0vw) translateY(0vh) rotate(0deg); opacity: 1; } 25% { transform: translateX(30vw) translateY(10vh) rotate(90deg); } 50% { transform: translateX(60vw) translateY(-10vh) rotate(180deg); } 75% { transform: translateX(90vw) translateY(10vh) rotate(270deg); } 100% { transform: translateX(120vw) translateY(0vh) rotate(360deg); opacity: 0; } }
+@keyframes radialOut { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+@keyframes twinkle { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.5); } }
 
-/* For Particles */
-@keyframes floatUp {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
-}
-@keyframes rainDown {
-    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(180deg); opacity: 0; }
-}
-@keyframes pop {
-    0% { transform: scale(0) rotate(0deg); opacity: 1; }
-    30% { transform: scale(1.2) rotate(108deg); }
-    60% { transform: scale(0.8) rotate(216deg); }
-    100% { transform: scale(1) rotate(360deg); opacity: 0; }
-}
-@keyframes driftInSpace {
-    0% { transform: translateX(0vw) translateY(0vh) rotate(0deg); opacity: 1; }
-    25% { transform: translateX(30vw) translateY(10vh) rotate(90deg); }
-    50% { transform: translateX(60vw) translateY(-10vh) rotate(180deg); }
-    75% { transform: translateX(90vw) translateY(10vh) rotate(270deg); }
-    100% { transform: translateX(120vw) translateY(0vh) rotate(360deg); opacity: 0; }
-}
-@keyframes radialOut {
-    0% { transform: scale(0.5); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
-}
-@keyframes twinkle {
-    0% { opacity: 0; transform: scale(0.5); }
-    50% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.5); }
-}
-
-/* --- Animation Classes --- */
 .animate-fade-in { animation: fadeIn 1.5s ease-in-out forwards; }
 .animate-fade-out { animation: fadeOut 1.5s ease-in-out forwards; }
 .animate-zoom-in { animation: zoomIn 1.5s ease-in-out forwards; }
@@ -124,39 +81,7 @@ body, html {
 .animate-blur-out { animation: blurOut 1.5s ease-in-out forwards; }
 .animate-iris-in { animation: irisIn 1.5s ease-in-out forwards; opacity: 1; }
 
-
-/* --- UI STYLES (Controls, Title, etc.) --- */
-
-#controls, #audio-controls, #title-screen {
-    z-index: 1001;
-}
-
-#controls {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-#controls button {
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #333;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-#controls button:hover {
-    background-color: white;
-}
-
+/* --- Title Screen --- */
 #title-screen {
     position: absolute;
     width: 100%;
@@ -167,198 +92,108 @@ body, html {
     justify-content: center;
     align-items: center;
     transition: opacity 1s ease-in-out;
+    z-index: 1002;
 }
 
-#title-image {
-    max-width: 80%;
-    max-height: 70%;
-    object-fit: contain;
-    margin-bottom: 30px;
-}
+#title-image { max-width: 80%; max-height: 70%; object-fit: contain; margin-bottom: 30px; }
+#start-btn { font-size: 20px; padding: 15px 30px; background-color: #4CAF50; color: white; border: none; border-radius: 50px; cursor: pointer; transition: background-color 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); font-weight: 700; }
+#start-btn:hover { background-color: #45a049; }
+.title-content { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: #333; }
 
-#start-btn {
-    font-size: 20px;
-    padding: 15px 30px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    font-weight: 700;
-}
-
-#start-btn:hover {
-    background-color: #45a049;
-}
-
-#random-display-text {
-    font-size: 0.8em;
-    color: #666;
-    margin-top: 10px;
-}
-
-.title-content {
+/* --- Unified UI Container --- */
+#ui-container {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    border-radius: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 5px;
+    z-index: 1001;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#image-info {
+    color: white;
     text-align: center;
-    padding: 20px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    padding: 0 10px;
+}
+
+#image-info a { color: #87cefa; text-decoration: none; }
+#image-info a:hover { text-decoration: underline; }
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#controls, #audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#controls button, #audio-controls button {
+    background-color: rgba(255, 255, 255, 0.8);
     color: #333;
+    border: none;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.main-title {
-    font-size: 2.5em;
-    margin-bottom: 10px;
-    color: #333;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
+#controls button:hover, #audio-controls button:hover { background-color: white; }
 
-.emoji {
-    font-size: 1em;
-    vertical-align: middle;
-    margin-right: 10px;
-}
+#volume-slider { -webkit-appearance: none; appearance: none; width: 80px; height: 5px; background: rgba(255, 255, 255, 0.5); border-radius: 5px; outline: none; }
+#volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; background: white; border-radius: 50%; cursor: pointer; }
+#volume-slider::-moz-range-thumb { width: 15px; height: 15px; background: white; border-radius: 50%; cursor: pointer; }
 
-.hidden {
-    display: none !important;
-}
-
-#audio-controls {
+/* --- Other UI --- */
+#contact-link {
     position: fixed;
-    bottom: 15px;
+    bottom: 10px;
     right: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    z-index: 1002;
 }
-
-#audio-controls button {
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: 1px solid white;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#contact-link a {
+    color: #A9A9A9; /* Dark Gray */
+    font-size: 14px;
+    text-decoration: none;
 }
+#contact-link a:hover { color: white; }
 
-#audio-controls button:hover {
-    background: rgba(0, 0, 0, 0.7);
-}
-
-#volume-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100px;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    outline: none;
-    transition: opacity 0.2s;
-}
-
-#volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    background: #666;
-    border: 2px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-#volume-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: #666;
-    border: 2px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-@media (max-width: 768px) {
-    .main-title {
-        font-size: 2em;
-    }
-
-    #start-btn {
-        font-size: 18px;
-        padding: 12px 25px;
-    }
-
-    #title-image {
-        max-width: 90%;
-        max-height: 60%;
-    }
-
-    .slide-fg-image {
-        width: 100%;
-        height: 70%;
-        top: 10%;
-        left: 0;
-    }
-
-    #controls {
-        bottom: 10px;
-        right: 10px;
-        left: auto;
-        transform: none;
-    }
-
-    #audio-controls {
-        bottom: 10px;
-        left: 10px;
-        right: auto;
-    }
-}
-
-#close-btn-container {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1002; /* 他のUIより手前に表示 */
-}
-
-#close-btn {
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: 1px solid white;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    line-height: 1;
-}
-
-#close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.hidden {
-    display: none;
-}
+#close-btn-container { position: fixed; top: 10px; right: 10px; z-index: 1002; }
+#close-btn { background-color: rgba(0, 0, 0, 0.5); color: white; border: 1px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; line-height: 1; }
+#close-btn:hover { background-color: rgba(0, 0, 0, 0.7); }
 
 #whiteout {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background-color: white;
     opacity: 0;
-    z-index: 9999;
+    z-index: 1010;
     pointer-events: none;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.hidden { display: none !important; }
+
+@media (max-width: 768px) {
+    .slide-fg-image { height: 75%; top: 5%; }
+    #ui-container { width: calc(100% - 20px); bottom: 10px; }
 }
