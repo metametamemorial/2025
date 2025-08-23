@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
     const nextBtn = document.getElementById('next-btn');
+    const homeBtn = document.getElementById('home-btn');
     const muteBtn = document.getElementById('mute-btn');
     const volumeSlider = document.getElementById('volume-slider');
     const particleContainer = document.getElementById('particle-container');
     const closeBtn = document.getElementById('close-btn');
     const whiteoutDiv = document.getElementById('whiteout');
-    const titleImage = document.getElementById('title-image');
 
     const paneA = document.getElementById('pane-a');
     const paneB = document.getElementById('pane-b');
@@ -22,13 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Data ---
     let imagePlaylist = [];
+    let randomImagePool = [];
     let currentImageIndex = 0;
     const bgmPlaylist = ["assets/bgm/0000.mp3"];
 
     // --- Slideshow Settings ---
     const transitionDuration = 1500;
-    const displayDuration = 5000;
-    const finalImageDuration = 4000;
+    const slideDuration = 2000; // 2 seconds for all images except the last
+    const finalImageDuration = 4000; // 4 seconds for the last image
 
     const mainAnimations = [
         { name: 'fade', in: 'animate-fade-in', out: 'animate-fade-out' },
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isTransitioning = false;
     let activePane = paneA;
     let activeFgImage = fgImageA;
+    let isBgmFinished = false;
 
     // --- Fixed Image Lists ---
     const fixedStartImages = [
@@ -97,60 +99,62 @@ document.addEventListener('DOMContentLoaded', () => {
         if(particleContainer) particleContainer.innerHTML = '';
     }
 
-    function showNextSlide() {
-        if (isTransitioning || !isPlaying) return;
-
-        currentImageIndex++;
-
-        if (currentImageIndex >= imagePlaylist.length) {
-            // This should not happen as the last image is handled separately
-            endSlideshow(true); // Force immediate end
-            return;
-        }
-
+    function showSlide(newIndex, manual = false) {
+        if (isTransitioning) return;
         isTransitioning = true;
+        
+        currentImageIndex = newIndex;
 
         const incomingPane = (activePane === paneA) ? paneB : paneA;
-        const outgoingPane = activePane;
         const incomingFgImage = (activeFgImage === fgImageA) ? fgImageB : fgImageA;
-        const outgoingFgImage = activeFgImage;
 
         incomingFgImage.src = imagePlaylist[currentImageIndex];
 
         incomingPane.classList.add('active');
-        outgoingPane.classList.remove('active');
-        startParticleEffect();
-
+        activePane.classList.remove('active');
+        
         const animation = mainAnimations[Math.floor(Math.random() * mainAnimations.length)];
-        outgoingFgImage.className = 'slide-fg-image';
+        activeFgImage.className = 'slide-fg-image';
         incomingFgImage.className = 'slide-fg-image';
-        void outgoingFgImage.offsetWidth;
+        void activeFgImage.offsetWidth;
         void incomingFgImage.offsetWidth;
-        outgoingFgImage.classList.add(animation.out);
+        activeFgImage.classList.add(animation.out);
         incomingFgImage.classList.add(animation.in);
+
+        if (!manual) startParticleEffect();
 
         setTimeout(() => {
             activePane = incomingPane;
             activeFgImage = incomingFgImage;
             isTransitioning = false;
-            if (isPlaying) {
-                const duration = (currentImageIndex === imagePlaylist.length - 1) ? finalImageDuration : displayDuration + transitionDuration;
-                slideshowTimeout = setTimeout(showNextSlide, duration);
+            if (isPlaying && !manual) {
+                scheduleNextSlide();
             }
         }, transitionDuration);
-
-        if (currentImageIndex === imagePlaylist.length - 1) {
-            pauseSlideshow(); // Stop automatic transitions
-            setTimeout(() => endSlideshow(false), finalImageDuration); // Start end sequence after 4s
-        }
     }
 
-    function endSlideshow(immediate = false) {
-        pauseSlideshow();
-        stopParticleEffect();
-        
-        const whiteoutDelay = immediate ? 0 : 100;
+    function scheduleNextSlide() {
+        clearTimeout(slideshowTimeout);
+        if (isBgmFinished) return;
+        slideshowTimeout = setTimeout(() => {
+            let nextIndex = currentImageIndex + 1;
+            // If we are past the fixed images, loop within the random part
+            if (nextIndex >= imagePlaylist.length) {
+                nextIndex = fixedStartImages.length;
+            }
+            showSlide(nextIndex);
+        }, slideDuration);
+    }
 
+    function finishSlideshow() {
+        isBgmFinished = true;
+        clearTimeout(slideshowTimeout);
+        pauseSlideshow();
+
+        // Show the final image
+        showSlide(imagePlaylist.push(fixedEndImage) - 1, true);
+
+        // Wait for the final image duration, then whiteout
         setTimeout(() => {
             whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
             whiteoutDiv.style.opacity = '1';
@@ -161,41 +165,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 titleScreen.style.opacity = '1';
                 resetSlideshowState();
             }, 1500); // Wait for whiteout transition
-        }, whiteoutDelay);
+        }, finalImageDuration);
     }
 
     function playSlideshow() {
         if (isPlaying) return;
         isPlaying = true;
-        playPauseBtn.textContent = '❚❚';
+        playPauseBtn.textContent = '⏸️';
         bgmElement.play().catch(error => console.error("BGM Error:", error));
-        clearTimeout(slideshowTimeout);
-        showNextSlide();
+        scheduleNextSlide();
     }
 
     function pauseSlideshow() {
         if (!isPlaying) return;
         isPlaying = false;
-        playPauseBtn.textContent = '▶';
+        playPauseBtn.textContent = '▶️';
         bgmElement.pause();
         clearTimeout(slideshowTimeout);
     }
 
     function togglePlayPause() {
-        if (currentImageIndex === imagePlaylist.length - 1) return; // No play/pause on final image
+        if (isBgmFinished) return;
         if (isPlaying) {
             pauseSlideshow();
         } else {
-            isPlaying = true;
-            playPauseBtn.textContent = '❚❚';
-            bgmElement.play().catch(error => console.error("BGM Error:", error));
-            slideshowTimeout = setTimeout(showNextSlide, displayDuration);
+            playSlideshow();
         }
     }
 
     function resetSlideshowState() {
         isPlaying = false;
+        isBgmFinished = false;
         imagePlaylist = [];
+        randomImagePool = [];
         currentImageIndex = 0;
         bgmElement.currentTime = 0;
         paneA.classList.remove('active');
@@ -208,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         activeFgImage = fgImageA;
         whiteoutDiv.style.transition = 'none';
         whiteoutDiv.style.opacity = '0';
+        playPauseBtn.textContent = '▶️';
     }
 
     function applyAudioSettings() {
@@ -244,28 +247,39 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMuteButton();
     });
 
-    bgmElement.addEventListener('ended', () => {
-        bgmElement.currentTime = 0;
-        bgmElement.play();
-    });
+    bgmElement.addEventListener('ended', finishSlideshow);
 
     nextBtn.addEventListener('click', () => {
-        if (currentImageIndex < imagePlaylist.length - 1) {
-            clearTimeout(slideshowTimeout);
-            showNextSlide();
+        if (isBgmFinished || isTransitioning) return;
+        clearTimeout(slideshowTimeout);
+        let nextIndex = currentImageIndex + 1;
+        if (nextIndex >= imagePlaylist.length) {
+            nextIndex = fixedStartImages.length; // Loop back to random part
         }
+        showSlide(nextIndex, true);
     });
 
-    prevBtn.addEventListener('click', () => { /* Not implemented */ });
+    prevBtn.addEventListener('click', () => {
+        if (isBgmFinished || isTransitioning || currentImageIndex <= 0) return;
+        clearTimeout(slideshowTimeout);
+        showSlide(currentImageIndex - 1, true);
+    });
+
+    homeBtn.addEventListener('click', () => {
+        clearTimeout(slideshowTimeout);
+        bgmElement.pause();
+        finishSlideshow();
+    });
+
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
         resetSlideshowState();
 
         const allFixedImages = [...fixedStartImages, fixedEndImage];
-        let randomImages = originalImageFiles.filter(img => !allFixedImages.includes(img));
-        shuffleArray(randomImages);
-        imagePlaylist = [...fixedStartImages, ...randomImages, fixedEndImage];
+        randomImagePool = originalImageFiles.filter(img => !allFixedImages.includes(img));
+        shuffleArray(randomImagePool);
+        imagePlaylist = [...fixedStartImages, ...randomImagePool];
 
         currentImageIndex = 0;
         const firstImage = imagePlaylist[currentImageIndex];
@@ -288,22 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
             
-            isPlaying = true;
-            playPauseBtn.textContent = '❚❚';
-            bgmElement.play().catch(error => console.error("BGM Error:", error));
+            playSlideshow();
             startParticleEffect();
-
-            slideshowTimeout = setTimeout(showNextSlide, displayDuration);
         }, 1000);
     });
 
-    applyAudioSettings();
-    bgmElement.src = bgmPlaylist[0];
-
+    // This might not work in all browsers due to security restrictions.
     if (closeBtn) {
         closeBtn.addEventListener('click', () => window.close());
     }
+
+    // Initial setup
+    applyAudioSettings();
+    bgmElement.src = bgmPlaylist[0];
 });
 
-// This should be populated by generate-image-list.js
-const originalImageFiles = [];
+

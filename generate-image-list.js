@@ -2,40 +2,26 @@ const fs = require('fs');
 const path = require('path');
 
 const imagesDir = path.join(__dirname, 'assets', 'image', 'a');
-const scriptPath = path.join(__dirname, 'script.js');
+const outputPath = path.join(__dirname, 'image-list.js');
 
 const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.PNG', '.JPG', '.JPEG', '.GIF'];
 
 fs.readdir(imagesDir, (err, files) => {
     if (err) {
-        console.error('Error reading images directory:', err);
-        return;
+        return console.error('Error reading images directory:', err);
     }
 
     const imageFiles = files.filter(file => {
         return imageExtensions.includes(path.extname(file));
-    }).sort(); // Sort to ensure consistent order
+    }).sort();
 
-    const imagePaths = imageFiles.map(file => `"assets/image/a/${file}"`).join(', ');
-    const newImageArrayString = `const originalImageFiles = [${imagePaths}];`;
+    const imagePaths = imageFiles.map(file => `'assets/image/a/${file}'`);
+    const content = `const originalImageFiles = [\n    ${imagePaths.join(',\n    ')}\n];`;
 
-    fs.readFile(scriptPath, 'utf8', (err, data) => {
+    fs.writeFile(outputPath, content, 'utf8', (err) => {
         if (err) {
-            console.error('Error reading script.js:', err);
-            return;
+            return console.error('Error writing to image-list.js:', err);
         }
-
-        const updatedContent = data.replace(
-            /const originalImageFiles = \[.*?\];/s,
-            newImageArrayString
-        );
-
-        fs.writeFile(scriptPath, updatedContent, 'utf8', (err) => {
-            if (err) {
-                console.error('Error writing to script.js:', err);
-                return;
-            }
-            console.log('Image list in script.js updated successfully!');
-        });
+        console.log('image-list.js has been updated successfully!');
     });
 });
