@@ -12,25 +12,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const volumeSlider = document.getElementById('volume-slider');
     const particleContainer = document.getElementById('particle-container');
     const closeBtn = document.getElementById('close-btn');
+    const whiteoutDiv = document.getElementById('whiteout');
+    const titleImage = document.getElementById('title-image');
 
-    // Panes and Foreground Images
     const paneA = document.getElementById('pane-a');
     const paneB = document.getElementById('pane-b');
     const fgImageA = document.getElementById('fg-image-a');
     const fgImageB = document.getElementById('fg-image-b');
 
     // --- Data ---
-    const imageBaseUrl = 'https://raw.githubusercontent.com/metametamemorial2025-tech/2025/main/assets/';
     let imagePlaylist = [];
     let currentImageIndex = 0;
-
-    const bgmPlaylist = [
-        "assets/bgm/0000.mp3"
-    ];
+    const bgmPlaylist = ["assets/bgm/0000.mp3"];
 
     // --- Slideshow Settings ---
     const transitionDuration = 1500;
     const displayDuration = 5000;
+    const finalImageDuration = 4000;
+
     const mainAnimations = [
         { name: 'fade', in: 'animate-fade-in', out: 'animate-fade-out' },
         { name: 'zoom', in: 'animate-zoom-in', out: 'animate-zoom-out' },
@@ -41,105 +40,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Particle Effect Settings ---
     let particleInterval = null;
     const particleThemes = [
-        { // A: Heart Float
-            name: 'Heart Float',
-            interval: 350,
-            emoji: ['🩷', '🩵', '💜', '💙', '💚', '💛', '🧡'],
-            generator: (emoji) => {
-                const p = document.createElement('span');
-                p.className = 'particle';
-                p.textContent = emoji;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.top = `${Math.random() * 100}vh`;
-                p.style.fontSize = `${32 + Math.random() * 32}px`;
-                p.style.animation = `radialOut ${1.8 + Math.random() * 1.2}s ease-out forwards`;
-                return p;
-            }
-        },
-        { // B1: Circle Pop
-            name: 'Circle Pop',
-            interval: 350,
-            emoji: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'],
-            generator: (emoji) => {
-                const p = document.createElement('span');
-                p.className = 'particle';
-                p.textContent = emoji;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.top = `${Math.random() * 100}vh`;
-                p.style.fontSize = `${15 + Math.random() * 20}px`;
-                p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`;
-                return p;
-            }
-        },
-        { // B2: Square Pop
-            name: 'Square Pop',
-            interval: 350,
-            emoji: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'],
-            generator: (emoji) => {
-                const p = document.createElement('span');
-                p.className = 'particle';
-                p.textContent = emoji;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.top = `${Math.random() * 100}vh`;
-                p.style.fontSize = `${15 + Math.random() * 20}px`;
-                p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`;
-                return p;
-            }
-        },
-        { // C: Celebration Float
-            name: 'Celebration Float',
-            interval: 400,
-            emoji: ['🎈', '🌈', '✨', '🍭', '🌸', '🧭', '🏫', '🫧'],
-            generator: (emoji) => {
-                const p = document.createElement('span');
-                p.className = 'particle';
-                p.textContent = emoji;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.top = `${Math.random() * 100}vh`;
-                p.style.fontSize = `${30 + Math.random() * 25}px`;
-                p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`;
-                return p;
-            }
-        },
-        { // D: Space Drift
-            name: 'Space Drift',
-            interval: 250,
-            emoji: ['🚀', '⭐', '🪐', '🛸', '🌍', '🌙', '🌟', '☀️'],
-            generator: (emoji) => {
-                const p = document.createElement('span');
-                p.className = 'particle';
-                p.textContent = emoji;
-                p.style.top = `${Math.random() * 100}vh`;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.fontSize = `${20 + Math.random() * 25}px`;
-                p.style.animation = `driftInSpace ${15 + Math.random() * 10}s linear forwards`;
-                return p;
-            }
-        },
-        { // E: Twinkle
-            name: 'Twinkle',
-            interval: 150,
-            emoji: ['⭐', '✨'],
-            generator: (emoji) => {
-                const p = document.createElement('span');
-                p.className = 'particle';
-                p.textContent = emoji;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.top = `${Math.random() * 100}vh`;
-                p.style.fontSize = `${32 + Math.random() * 32}px`;
-                p.style.animation = `twinkle ${1.0 + Math.random() * 1.0}s ease-in-out forwards`;
-                return p;
-            }
-        }
+        { name: 'Heart Float', interval: 350, emoji: ['🩷', '🩵', '💜', '💙', '💚', '💛', '🧡'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${32 + Math.random() * 32}px`; p.style.animation = `radialOut ${1.8 + Math.random() * 1.2}s ease-out forwards`; return p; } },
+        { name: 'Circle Pop', interval: 350, emoji: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${15 + Math.random() * 20}px`; p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`; return p; } },
+        { name: 'Square Pop', interval: 350, emoji: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${15 + Math.random() * 20}px`; p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`; return p; } },
+        { name: 'Celebration Float', interval: 400, emoji: ['🎈', '🌈', '✨', '🍭', '🌸', '🧭', '🏫', '🫧'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${30 + Math.random() * 25}px`; p.style.animation = `floatUp ${6 + Math.random() * 6}s linear forwards`; return p; } },
+        { name: 'Space Drift', interval: 250, emoji: ['🚀', '⭐', '🪐', '🛸', '🌍', '🌙', '🌟', '☀️'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.top = `${Math.random() * 100}vh`; p.style.left = `${Math.random() * 100}vw`; p.style.fontSize = `${20 + Math.random() * 25}px`; p.style.animation = `driftInSpace ${15 + Math.random() * 10}s linear forwards`; return p; } },
+        { name: 'Twinkle', interval: 150, emoji: ['⭐', '✨'], generator: (emoji) => { const p = document.createElement('span'); p.className = 'particle'; p.textContent = emoji; p.style.left = `${Math.random() * 100}vw`; p.style.top = `${Math.random() * 100}vh`; p.style.fontSize = `${32 + Math.random() * 32}px`; p.style.animation = `twinkle ${1.0 + Math.random() * 1.0}s ease-in-out forwards`; return p; } }
     ];
 
     // --- State Variables ---
-    let currentBgmIndex = 0;
     let isPlaying = false;
     let slideshowTimeout;
     let isTransitioning = false;
     let activePane = paneA;
     let activeFgImage = fgImageA;
+
+    // --- Fixed Image Lists ---
+    const fixedStartImages = [
+        'assets/image/a/zundaZunda1030_2025-08-16_121912_1956556321895117113_01.jpg',
+        'assets/image/a/zundaZunda1030_2025-08-16_121912_1956556321895117113_02.jpg',
+        'assets/image/a/keroke___ro_2025-08-17_003806_1957104656624071026_03.jpg',
+        'assets/image/a/cluster_jp_2025-08-18_133009_1957298949242659213_01.jpg',
+        'assets/image/a/6pongimetaRADIO_2025-08-18_180001_1957366863882535243_01.jpg',
+        'assets/image/a/6pongimetaRADIO_2025-06-30_210053_1939655378247237936_01.jpg',
+        'assets/image/a/6pongimetaRADIO_2025-06-30_210053_1939655378247237936_02.jpg',
+        'assets/image/a/kogetogame_2025-07-18_193417_1946156565687570653_01.jpg',
+        'assets/image/a/sakuraba_hug_2025-07-22_002044_1947678204933853341_01.jpg'
+    ];
+    const fixedEndImage = 'assets/image/a/satoshikisaragi_2025-08-17_123811_1956923484199883172_01.jpg';
 
     // --- Core Functions ---
 
@@ -150,46 +78,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getNextImage() {
-        if (currentImageIndex >= imagePlaylist.length) {
-            currentImageIndex = 0; // Loop back to the beginning
-        }
-        const imageName = imagePlaylist[currentImageIndex];
-        currentImageIndex++;
-        return imageBaseUrl + imageName;
-    }
-
     function startParticleEffect() {
         stopParticleEffect();
-        // particleContainerが存在しない場合は処理を中断
-        if (!particleContainer) {
-            console.error("particleContainer not found. Particle effect cannot start.");
-            return;
-        }
+        if (!particleContainer) return;
         const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
-
         particleInterval = setInterval(() => {
             const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
             const particleElement = theme.generator(emoji);
-            // particleElementがnullでないことを確認
             if (particleElement) {
                 particleContainer.appendChild(particleElement);
-                particleElement.addEventListener('animationend', () => {
-                    particleElement.remove();
-                }, { once: true });
-            } else {
-                console.error("Failed to create particleElement.");
+                particleElement.addEventListener('animationend', () => particleElement.remove(), { once: true });
             }
         }, theme.interval);
     }
 
     function stopParticleEffect() {
         clearInterval(particleInterval);
-        particleContainer.innerHTML = '';
+        if(particleContainer) particleContainer.innerHTML = '';
     }
 
-    function switchImage() {
+    function showNextSlide() {
         if (isTransitioning || !isPlaying) return;
+
+        currentImageIndex++;
+
+        if (currentImageIndex >= imagePlaylist.length) {
+            // This should not happen as the last image is handled separately
+            endSlideshow(true); // Force immediate end
+            return;
+        }
+
         isTransitioning = true;
 
         const incomingPane = (activePane === paneA) ? paneB : paneA;
@@ -197,8 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const incomingFgImage = (activeFgImage === fgImageA) ? fgImageB : fgImageA;
         const outgoingFgImage = activeFgImage;
 
-        const nextImageSrc = getNextImage();
-        incomingFgImage.src = nextImageSrc;
+        incomingFgImage.src = imagePlaylist[currentImageIndex];
 
         incomingPane.classList.add('active');
         outgoingPane.classList.remove('active');
@@ -217,9 +134,34 @@ document.addEventListener('DOMContentLoaded', () => {
             activeFgImage = incomingFgImage;
             isTransitioning = false;
             if (isPlaying) {
-                slideshowTimeout = setTimeout(switchImage, displayDuration + transitionDuration);
+                const duration = (currentImageIndex === imagePlaylist.length - 1) ? finalImageDuration : displayDuration + transitionDuration;
+                slideshowTimeout = setTimeout(showNextSlide, duration);
             }
         }, transitionDuration);
+
+        if (currentImageIndex === imagePlaylist.length - 1) {
+            pauseSlideshow(); // Stop automatic transitions
+            setTimeout(() => endSlideshow(false), finalImageDuration); // Start end sequence after 4s
+        }
+    }
+
+    function endSlideshow(immediate = false) {
+        pauseSlideshow();
+        stopParticleEffect();
+        
+        const whiteoutDelay = immediate ? 0 : 100;
+
+        setTimeout(() => {
+            whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
+            whiteoutDiv.style.opacity = '1';
+            setTimeout(() => {
+                slideshowContainer.classList.add('hidden');
+                controls.classList.add('hidden');
+                titleScreen.classList.remove('hidden');
+                titleScreen.style.opacity = '1';
+                resetSlideshowState();
+            }, 1500); // Wait for whiteout transition
+        }, whiteoutDelay);
     }
 
     function playSlideshow() {
@@ -228,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         playPauseBtn.textContent = '❚❚';
         bgmElement.play().catch(error => console.error("BGM Error:", error));
         clearTimeout(slideshowTimeout);
-        slideshowTimeout = setTimeout(switchImage, displayDuration);
+        showNextSlide();
     }
 
     function pauseSlideshow() {
@@ -240,78 +182,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function togglePlayPause() {
-        if (isPlaying) pauseSlideshow();
-        else playSlideshow();
+        if (currentImageIndex === imagePlaylist.length - 1) return; // No play/pause on final image
+        if (isPlaying) {
+            pauseSlideshow();
+        } else {
+            isPlaying = true;
+            playPauseBtn.textContent = '❚❚';
+            bgmElement.play().catch(error => console.error("BGM Error:", error));
+            slideshowTimeout = setTimeout(showNextSlide, displayDuration);
+        }
     }
 
-    function endSlideshow() {
-        pauseSlideshow();
-        stopParticleEffect();
-
-        // Display the final image
-        const finalImageSrc = imageBaseUrl + '9999.jpg';
-        activeFgImage.src = finalImageSrc;
-
-        // Ensure the final image is visible and fades in
-        const incomingPane = activePane;
-        const outgoingPane = (activePane === paneA) ? paneB : paneA;
-        incomingPane.classList.add('active');
-        outgoingPane.classList.remove('active');
-        activeFgImage.className = 'slide-fg-image animate-fade-in';
-
-        // Wait for 4 seconds, then start whiteout
-        setTimeout(() => {
-            const whiteout = document.createElement('div');
-            whiteout.style.position = 'fixed';
-            whiteout.style.top = '0';
-            whiteout.style.left = '0';
-            whiteout.style.width = '100vw';
-            whiteout.style.height = '100vh';
-            whiteout.style.backgroundColor = 'white';
-            whiteout.style.opacity = '0';
-            whiteout.style.zIndex = '10000';
-            whiteout.style.transition = 'opacity 1.5s ease-in';
-            document.body.appendChild(whiteout);
-
-            setTimeout(() => {
-                whiteout.style.opacity = '1';
-            }, 100);
-
-            setTimeout(() => {
-                slideshowContainer.classList.add('hidden');
-                controls.classList.add('hidden');
-                titleScreen.classList.remove('hidden');
-                titleScreen.style.opacity = '1';
-                document.body.removeChild(whiteout);
-                resetSlideshowState();
-            }, 2000);
-        }, 4000);
-    }
-    
     function resetSlideshowState() {
         isPlaying = false;
         imagePlaylist = [];
         currentImageIndex = 0;
-        currentBgmIndex = 0;
-        bgmElement.src = bgmPlaylist[currentBgmIndex];
-        
+        bgmElement.currentTime = 0;
         paneA.classList.remove('active');
         paneB.classList.remove('active');
+        fgImageA.src = '';
+        fgImageB.src = '';
         fgImageA.className = 'slide-fg-image';
         fgImageB.className = 'slide-fg-image';
         activePane = paneA;
         activeFgImage = fgImageA;
-    }
-
-    // --- BGM and Audio Controls ---
-    function playNextBgm() {
-        currentBgmIndex++;
-        if (currentBgmIndex >= bgmPlaylist.length) {
-            endSlideshow();
-        } else {
-            bgmElement.src = bgmPlaylist[currentBgmIndex];
-            bgmElement.play().catch(error => console.error("BGM Error:", error));
-        }
+        whiteoutDiv.style.transition = 'none';
+        whiteoutDiv.style.opacity = '0';
     }
 
     function applyAudioSettings() {
@@ -348,75 +244,66 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMuteButton();
     });
 
-    bgmElement.addEventListener('ended', playNextBgm);
-    nextBtn.addEventListener('click', () => {
-        clearTimeout(slideshowTimeout);
-        switchImage();
+    bgmElement.addEventListener('ended', () => {
+        bgmElement.currentTime = 0;
+        bgmElement.play();
     });
-    prevBtn.addEventListener('click', () => { /* Previous button functionality might need re-evaluation */ });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentImageIndex < imagePlaylist.length - 1) {
+            clearTimeout(slideshowTimeout);
+            showNextSlide();
+        }
+    });
+
+    prevBtn.addEventListener('click', () => { /* Not implemented */ });
     playPauseBtn.addEventListener('click', togglePlayPause);
 
-        startBtn.addEventListener('click', () => {
-        // 状態を完全にリセット
+    startBtn.addEventListener('click', () => {
         resetSlideshowState();
 
-        // 画像プレイリストを作成
-        const startImages = [
-            '0001.jpg',
-            '0002.jpg',
-            '0003.jpg',
-            '84Atsuko_Poke_2025-08-07_224501_1953452319934214634_01.jpg',
-            '9997.jpg',
-            '9998.jpg'
-        ];
-        let middleImages = window.allImages.filter(img => !startImages.includes(img));
-        shuffleArray(middleImages);
-        imagePlaylist = [...startImages, ...middleImages];
+        const allFixedImages = [...fixedStartImages, fixedEndImage];
+        let randomImages = originalImageFiles.filter(img => !allFixedImages.includes(img));
+        shuffleArray(randomImages);
+        imagePlaylist = [...fixedStartImages, ...randomImages, fixedEndImage];
 
-        // 1枚目の画像をセットし、アニメーションを準備
-        const firstImage = getNextImage();
+        currentImageIndex = 0;
+        const firstImage = imagePlaylist[currentImageIndex];
+        if (!firstImage) return;
+
         fgImageA.src = firstImage;
-        fgImageB.src = ''; // 念のためBは空に
-        
-        // paneとfgImageの状態を初期化
+        fgImageB.src = '';
         paneA.classList.add('active');
         paneB.classList.remove('active');
-        fgImageA.className = 'slide-fg-image'; // アニメーションクラスをリセット
+        fgImageA.className = 'slide-fg-image animate-fade-in';
         fgImageB.className = 'slide-fg-image';
         
-        // 1枚目をフェードインさせる
-        fgImageA.classList.add('animate-fade-in');
-
         activePane = paneA;
         activeFgImage = fgImageA;
-        isTransitioning = false; // トランジション中でないことを明示
+        isTransitioning = false;
 
-        // タイトル画面を非表示に
         titleScreen.style.opacity = 0;
         setTimeout(() => {
             titleScreen.classList.add('hidden');
             slideshowContainer.classList.remove('hidden');
             controls.classList.remove('hidden');
-
-            // スライドショーを開始
+            
             isPlaying = true;
             playPauseBtn.textContent = '❚❚';
             bgmElement.play().catch(error => console.error("BGM Error:", error));
             startParticleEffect();
 
-            // タイマーをクリアし、次の画像への切り替えを予約
-            clearTimeout(slideshowTimeout);
-            slideshowTimeout = setTimeout(switchImage, displayDuration);
-        }, 1000); // タイトル画面のフェードアウトを待つ
+            slideshowTimeout = setTimeout(showNextSlide, displayDuration);
+        }, 1000);
     });
 
-    // Initial setup on page load
     applyAudioSettings();
-    bgmElement.src = bgmPlaylist[currentBgmIndex];
+    bgmElement.src = bgmPlaylist[0];
 
     if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            window.close();
-        });
+        closeBtn.addEventListener('click', () => window.close());
     }
 });
+
+// This should be populated by generate-image-list.js
+const originalImageFiles = [];
