@@ -59,6 +59,46 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     const fixedEndImage = 'assets/image/a/satoshikisaragi_2025-08-17_123811_1956923484199883172_01.jpg';
 
+    // --- Particle Themes ---
+    const particleThemes = [
+        {
+            name: 'Heart Float',
+            emojis: ['🩷', '🩵', '💜', '💙', '💚', '💛', '🧡'],
+            animation: 'scale-and-float-up',
+            count: 25
+        },
+        {
+            name: 'Circle Pop',
+            emojis: ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣'],
+            animation: 'pop',
+            count: 20
+        },
+        {
+            name: 'Square Pop',
+            emojis: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪'],
+            animation: 'pop-rotate',
+            count: 20
+        },
+        {
+            name: 'Celebration Float',
+            emojis: ['🎈', '🌈', '🍭', '🌸', '🧭', '🏫', '🫧'],
+            animation: 'floatUp',
+            count: 25
+        },
+        {
+            name: 'Space Drift',
+            emojis: ['🚀', '⭐', '🪐', '🛸', '🌍', '🌙', '🌟', '☀️'],
+            animation: 'drift',
+            count: 15
+        },
+        {
+            name: 'Twinkle',
+            emojis: ['⭐', '✨'],
+            animation: 'twinkle',
+            count: 40
+        }
+    ];
+
     // --- Core Functions ---
 
     function parseImageInfo(imagePath) {
@@ -85,28 +125,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function startParticleEffect() {
-        clearInterval(particleInterval);
+    function playParticleTheme() {
         if (!particleContainer) return;
+        particleContainer.innerHTML = ''; // Clear previous particles
+
         const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
-        particleInterval = setInterval(() => {
-            const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
+        const initialVisibilityThemes = ['Heart Float', 'Celebration Float', 'Space Drift'];
+
+        for (let i = 0; i < theme.count; i++) {
             const p = document.createElement('span');
             p.className = 'particle';
-            p.textContent = emoji;
+            p.textContent = theme.emojis[Math.floor(Math.random() * theme.emojis.length)];
+
+            let duration, delay;
+
             p.style.left = `${Math.random() * 100}vw`;
             p.style.top = `${Math.random() * 100}vh`;
-            p.style.fontSize = `${15 + Math.random() * 20}px`;
-            p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`;
+
+            if (initialVisibilityThemes.includes(theme.name)) {
+                p.style.opacity = 1;
+            }
+
+            if (theme.name === 'Heart Float') {
+                duration = 6 + Math.random() * 5;
+                delay = 0; // No delay
+            } else if (theme.name === 'Celebration Float') {
+                duration = 8 + Math.random() * 7;
+                delay = 0; // No delay
+                p.style.setProperty('--r-start', `${(Math.random() - 0.5) * 90}deg`);
+                p.style.setProperty('--r-end', `${(Math.random() - 0.5) * 720}deg`);
+            } else if (theme.name === 'Space Drift') {
+                duration = 12 + Math.random() * 8;
+                delay = 0; // No delay
+                p.style.setProperty('--drift-y-start', `${(Math.random() - 0.5) * 20}vh`);
+                p.style.setProperty('--drift-y-end', `${(Math.random() - 0.5) * 20}vh`);
+            } else {
+                duration = 1.5 + Math.random() * 2;
+                delay = Math.random() * 1.5;
+            }
+
+            p.style.fontSize = `${18 + Math.random() * 24}px`;
+            p.style.animation = `${theme.animation} ${duration}s linear ${delay}s forwards`;
+
             particleContainer.appendChild(p);
             p.addEventListener('animationend', () => p.remove(), { once: true });
-        }, 350);
+        }
     }
 
-    function stopParticleEffect() {
-        clearInterval(particleInterval);
-        if(particleContainer) particleContainer.innerHTML = '';
-    }
 
     function showSlide(newIndex) {
         if (isTransitioning) return;
@@ -119,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         incomingFgImage.src = currentImage;
         updateImageInfo(currentImage);
+        playParticleTheme(); // Play new particles with the new slide
 
         incomingPane.classList.add('active');
         activePane.classList.remove('active');
@@ -157,7 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
         isBgmFinished = true;
         clearTimeout(slideshowTimeout);
         pauseSlideshow();
-        stopParticleEffect();
+        if (particleContainer) particleContainer.innerHTML = '';
+
 
         const displayFinalImage = () => {
             showSlide(imagePlaylist.push(fixedEndImage) - 1);
@@ -245,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         playPauseBtn.textContent = '▶️';
         imageInfoDiv.style.opacity = '0';
         titleScreen.style.opacity = '1';
+        if (particleContainer) particleContainer.innerHTML = '';
     }
 
     function applyAudioSettings() {
@@ -295,7 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
             resetSlideshowState();
 
             const allFixedImages = [...fixedStartImages, fixedEndImage];
-            randomImagePool = originalImageFiles.filter(img => !allFixedImages.includes(img));
+            // Filter out MASA__mushi_ images and fixed images
+            randomImagePool = originalImageFiles.filter(img => 
+                !img.includes('MASA__mushi_') && !allFixedImages.includes(img)
+            );
             shuffleArray(randomImagePool);
             imagePlaylist = [...fixedStartImages, ...randomImagePool];
 
@@ -305,6 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fgImageA.src = firstImage;
             updateImageInfo(firstImage);
+            playParticleTheme(); // Play particles for the first slide
+
             fgImageB.src = '';
             paneA.classList.add('active');
             paneB.classList.remove('active');
@@ -320,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
             uiContainer.classList.remove('hidden');
             
             playSlideshow();
-            startParticleEffect();
 
             setTimeout(() => {
                 whiteoutDiv.style.opacity = '0';
