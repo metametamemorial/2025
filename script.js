@@ -248,30 +248,44 @@ document.addEventListener('DOMContentLoaded', () => {
         pauseSlideshow();
         stopParticleEffect();
 
-        const whiteout = document.createElement('div');
-        whiteout.style.position = 'fixed';
-        whiteout.style.top = '0';
-        whiteout.style.left = '0';
-        whiteout.style.width = '100vw';
-        whiteout.style.height = '100vh';
-        whiteout.style.backgroundColor = 'white';
-        whiteout.style.opacity = '0';
-        whiteout.style.zIndex = '10000';
-        whiteout.style.transition = 'opacity 1.5s ease-in';
-        document.body.appendChild(whiteout);
+        // Display the final image
+        const finalImageSrc = imageBaseUrl + '9999.jpg';
+        activeFgImage.src = finalImageSrc;
 
-        setTimeout(() => {
-            whiteout.style.opacity = '1';
-        }, 100);
+        // Ensure the final image is visible and fades in
+        const incomingPane = activePane;
+        const outgoingPane = (activePane === paneA) ? paneB : paneA;
+        incomingPane.classList.add('active');
+        outgoingPane.classList.remove('active');
+        activeFgImage.className = 'slide-fg-image animate-fade-in';
 
+        // Wait for 4 seconds, then start whiteout
         setTimeout(() => {
-            slideshowContainer.classList.add('hidden');
-            controls.classList.add('hidden');
-            titleScreen.classList.remove('hidden');
-            titleScreen.style.opacity = '1';
-            document.body.removeChild(whiteout);
-            resetSlideshowState();
-        }, 2000);
+            const whiteout = document.createElement('div');
+            whiteout.style.position = 'fixed';
+            whiteout.style.top = '0';
+            whiteout.style.left = '0';
+            whiteout.style.width = '100vw';
+            whiteout.style.height = '100vh';
+            whiteout.style.backgroundColor = 'white';
+            whiteout.style.opacity = '0';
+            whiteout.style.zIndex = '10000';
+            whiteout.style.transition = 'opacity 1.5s ease-in';
+            document.body.appendChild(whiteout);
+
+            setTimeout(() => {
+                whiteout.style.opacity = '1';
+            }, 100);
+
+            setTimeout(() => {
+                slideshowContainer.classList.add('hidden');
+                controls.classList.add('hidden');
+                titleScreen.classList.remove('hidden');
+                titleScreen.style.opacity = '1';
+                document.body.removeChild(whiteout);
+                resetSlideshowState();
+            }, 2000);
+        }, 4000);
     }
     
     function resetSlideshowState() {
@@ -347,7 +361,14 @@ document.addEventListener('DOMContentLoaded', () => {
         resetSlideshowState();
 
         // 画像プレイリストを作成
-        const startImages = ['0001.jpg', '0002.jpg', '0003.jpg'];
+        const startImages = [
+            '0001.jpg',
+            '0002.jpg',
+            '0003.jpg',
+            '84Atsuko_Poke_2025-08-07_224501_1953452319934214634_01.jpg',
+            '9997.jpg',
+            '9998.jpg'
+        ];
         let middleImages = window.allImages.filter(img => !startImages.includes(img));
         shuffleArray(middleImages);
         imagePlaylist = [...startImages, ...middleImages];
