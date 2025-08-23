@@ -64,13 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseImageInfo(imagePath) {
         const filename = imagePath.split('/').pop();
         const match = filename.match(/(.*?)_(\d{4}-\d{2}-\d{2})_/);
-
-        if (match && match[1] && match[2]) {
-            const account = match[1];
-            const date = match[2];
-            return { account, date };
-        }
-        return null;
+        return (match && match[1] && match[2]) ? { account: match[1], date: match[2] } : null;
     }
 
     function updateImageInfo(imagePath) {
@@ -89,6 +83,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+    }
+
+    function startParticleEffect() {
+        clearInterval(particleInterval);
+        if (!particleContainer) return;
+        const theme = particleThemes[Math.floor(Math.random() * particleThemes.length)];
+        particleInterval = setInterval(() => {
+            const emoji = theme.emoji[Math.floor(Math.random() * theme.emoji.length)];
+            const p = document.createElement('span');
+            p.className = 'particle';
+            p.textContent = emoji;
+            p.style.left = `${Math.random() * 100}vw`;
+            p.style.top = `${Math.random() * 100}vh`;
+            p.style.fontSize = `${15 + Math.random() * 20}px`;
+            p.style.animation = `pop ${1.0 + Math.random() * 1.5}s ease-in-out forwards`;
+            particleContainer.appendChild(p);
+            p.addEventListener('animationend', () => p.remove(), { once: true });
+        }, 350);
+    }
+
+    function stopParticleEffect() {
+        clearInterval(particleInterval);
+        if(particleContainer) particleContainer.innerHTML = '';
     }
 
     function showSlide(newIndex) {
@@ -118,41 +135,56 @@ document.addEventListener('DOMContentLoaded', () => {
             activePane = incomingPane;
             activeFgImage = incomingFgImage;
             isTransitioning = false;
+            if (isPlaying) {
+                scheduleNextSlide();
+            }
         }, transitionDuration);
     }
 
     function scheduleNextSlide() {
         clearTimeout(slideshowTimeout);
-        if (isBgmFinished || !isPlaying) return;
+        if (isBgmFinished) return;
         slideshowTimeout = setTimeout(() => {
             let nextIndex = currentImageIndex + 1;
             if (nextIndex >= imagePlaylist.length) {
                 nextIndex = fixedStartImages.length;
             }
             showSlide(nextIndex);
-            scheduleNextSlide(); 
         }, slideDuration);
     }
 
-    function finishSlideshow() {
+    function finishSlideshow(isManual = false) {
         isBgmFinished = true;
         clearTimeout(slideshowTimeout);
         pauseSlideshow();
+        stopParticleEffect();
 
-        const finalPlaylist = [...imagePlaylist, fixedEndImage];
-        showSlide(finalPlaylist.length - 1);
-        imagePlaylist = finalPlaylist;
+        const displayFinalImage = () => {
+            showSlide(imagePlaylist.push(fixedEndImage) - 1);
+            setTimeout(() => {
+                whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
+                whiteoutDiv.style.opacity = '1';
+                setTimeout(() => {
+                    slideshowContainer.classList.add('hidden');
+                    uiContainer.classList.add('hidden');
+                    titleScreen.classList.remove('hidden');
+                    resetSlideshowState();
+                }, 1500);
+            }, finalImageDuration);
+        };
 
-        setTimeout(() => {
-            whiteoutDiv.style.transition = 'opacity 1.5s ease-in-out';
+        if (isManual) {
+            whiteoutDiv.style.transition = 'opacity 0.5s ease-in-out';
             whiteoutDiv.style.opacity = '1';
             setTimeout(() => {
-                slideshowContainer.classList.add('hidden');
-                uiContainer.classList.add('hidden');
-                titleScreen.classList.remove('hidden');
-                resetSlideshowState();
-            }, 1500);
-        }, finalImageDuration);
+                 slideshowContainer.classList.add('hidden');
+                 uiContainer.classList.add('hidden');
+                 titleScreen.classList.remove('hidden');
+                 resetSlideshowState();
+            }, 500);
+        } else {
+            displayFinalImage();
+        }
     }
 
     function playSlideshow() {
@@ -182,8 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(slideshowTimeout);
         let nextIndex = currentImageIndex + direction;
 
-        if (nextIndex < 0) nextIndex = imagePlaylist.length - 1;
-        else if (nextIndex >= imagePlaylist.length) nextIndex = 0;
+        if (nextIndex < 0) {
+            nextIndex = imagePlaylist.length - 1;
+        } else if (nextIndex >= imagePlaylist.length) {
+            nextIndex = 0;
+        }
         
         showSlide(nextIndex);
 
@@ -276,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fgImageA.className = 'slide-fg-image animate-fade-in';
             fgImageB.className = 'slide-fg-image';
             
-            activePane = fgImageA;
+            activePane = paneA;
             activeFgImage = fgImageA;
             isTransitioning = false;
 
@@ -285,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             uiContainer.classList.remove('hidden');
             
             playSlideshow();
+            startParticleEffect();
 
             setTimeout(() => {
                 whiteoutDiv.style.opacity = '0';
