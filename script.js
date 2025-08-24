@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let randomImagePool = [];
     let currentImageIndex = 0;
     const bgmPlaylist = [
-        "assets/bgm/Hopeful_World.mp3",
-        "assets/bgm/夏が呼んでいる.mp3",
-        "assets/bgm/明日への旅路.mp3"
+        "assets/bgm/001Hopeful_World.mp3",
+        "assets/bgm/002明日への旅路.mp3",
+        "assets/bgm/003夏が呼んでいる.mp3"
     ];
     let currentBgmIndex = 0;
-    const specialBgm = "assets/bgm/0000.mp3";
+    const specialBgm = "assets/bgm/meta.mp3";
 
     // --- Slideshow Settings ---
     const transitionDuration = 1500;
@@ -346,15 +346,24 @@ document.addEventListener('DOMContentLoaded', () => {
         currentBgmIndex = 0;
     }
 
+    function updateBgmVolume() {
+        const sliderValue = parseFloat(volumeSlider.value);
+        let newVolume = sliderValue;
+        if (isSpecialMode) {
+            newVolume = Math.min(1.0, sliderValue * 1.3);
+        }
+        bgmElement.volume = newVolume;
+        updateMuteButton();
+    }
+
     function applyAudioSettings() {
         const savedVolume = localStorage.getItem('bgmVolume');
         const isMuted = localStorage.getItem('bgmMuted') === 'true';
         let volumeValue = 0.5;
         if (savedVolume !== null) volumeValue = parseFloat(savedVolume);
-        bgmElement.volume = volumeValue;
         volumeSlider.value = volumeValue;
         bgmElement.muted = isMuted;
-        updateMuteButton();
+        updateBgmVolume();
     }
 
     function updateMuteButton() {
@@ -362,12 +371,22 @@ document.addEventListener('DOMContentLoaded', () => {
         else muteBtn.textContent = '🔊';
     }
 
-    function prepareAndStartSlideshow() {
+    function prepareAndStartSlideshow(startInSpecialMode = false) {
         whiteoutDiv.style.transition = 'opacity 0.5s ease-in-out';
         whiteoutDiv.style.opacity = '1';
 
         setTimeout(() => {
             resetSlideshowState();
+            isSpecialMode = startInSpecialMode; // Set mode
+            
+            if (isSpecialMode) {
+                playBalloonParty();
+                bgmElement.src = specialBgm;
+            } else {
+                bgmElement.src = bgmPlaylist[0];
+            }
+            updateBgmVolume(); // Apply volume based on mode
+            bgmElement.play().catch(e => console.error("Play failed:", e));
 
             const allFixedImages = [...fixedStartImages, fixedEndImage];
             randomImagePool = originalImageFiles.filter(img => 
@@ -414,14 +433,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     volumeSlider.addEventListener('input', () => {
-        const newVolume = parseFloat(volumeSlider.value);
-        bgmElement.volume = newVolume;
-        localStorage.setItem('bgmVolume', newVolume.toString());
-        if (newVolume > 0 && bgmElement.muted) {
+        localStorage.setItem('bgmVolume', volumeSlider.value);
+        updateBgmVolume();
+        if (parseFloat(volumeSlider.value) > 0 && bgmElement.muted) {
             bgmElement.muted = false;
             localStorage.setItem('bgmMuted', 'false');
+            updateMuteButton();
         }
-        updateMuteButton();
     });
 
     bgmElement.addEventListener('ended', () => {
@@ -444,25 +462,28 @@ document.addEventListener('DOMContentLoaded', () => {
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
-        isSpecialMode = false;
-        bgmElement.src = bgmPlaylist[0];
-        bgmElement.play().catch(e => console.error("Play failed:", e));
-        prepareAndStartSlideshow();
+        prepareAndStartSlideshow(false);
     });
 
     titleBalloon.addEventListener('click', () => {
-        playBalloonParty();
-        isSpecialMode = true;
-        bgmElement.src = specialBgm;
-        bgmElement.play().catch(e => console.error("Play failed:", e));
-        prepareAndStartSlideshow();
+        // Whiteout effect starts immediately
+        whiteoutDiv.style.transition = 'opacity 0.1s ease-in';
+        whiteoutDiv.style.opacity = '1';
+        
+        // A short delay to allow whiteout, then prepare and start slideshow
+        setTimeout(() => {
+            prepareAndStartSlideshow(true); // Start in special mode
+        }, 200);
     });
 
     slideshowBalloon.addEventListener('click', () => {
         playBalloonParty();
-        isSpecialMode = true;
-        bgmElement.src = specialBgm;
-        bgmElement.play().catch(error => console.error("BGM Error:", error));
+        if (!isSpecialMode) {
+            isSpecialMode = true;
+            bgmElement.src = specialBgm;
+            updateBgmVolume();
+            bgmElement.play().catch(error => console.error("BGM Error:", error));
+        }
     });
 
     if (closeBtn) {
