@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let randomImagePool = [];
     let currentImageIndex = 0;
     const bgmPlaylist = [
-        "assets/bgm/Hopeful_World.mp3",
-        "assets/bgm/夏が呼んでいる.mp3",
-        "assets/bgm/明日への旅路.mp3"
+        "assets/bgm/001Hopeful_World.mp3",
+        "assets/bgm/002明日への旅路.mp3",
+        "assets/bgm/003夏が呼んでいる.mp3"
     ];
     let currentBgmIndex = 0;
-    const specialBgm = "assets/bgm/0000.mp3";
+    const specialBgm = "assets/bgm/meta.mp3";
 
     // --- Slideshow Settings ---
     const transitionDuration = 1500;
@@ -184,23 +184,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function playBalloonParty() {
         if (!particleContainer) return;
         particleContainer.innerHTML = ''; 
-        const count = 200;
+        
+        const count = 25; // Same count as Heart Float
+        const animation = 'scale-and-float-up'; // Same animation as Heart Float
+
         for (let i = 0; i < count; i++) {
             const p = document.createElement('span');
             p.className = 'particle';
-            p.textContent = '🎈';
+            p.textContent = '🎈'; // Use balloon emoji
             
             p.style.left = `${Math.random() * 100}vw`;
-            p.style.top = `${100 + Math.random() * 10}vh`; 
+            p.style.top = `${Math.random() * 100}vh`;
             
-            const duration = 8 + Math.random() * 7;
-            const delay = Math.random() * 2;
-            
-            p.style.setProperty('--r-end', `${(Math.random() - 0.5) * 180}deg`);
-            p.style.setProperty('--x-drift', `${(Math.random() - 0.5) * 40}vw`);
+            const duration = 6 + Math.random() * 5; // Same duration as Heart Float
+            const delay = 0; // Same delay as Heart Float
 
             p.style.fontSize = `${18 + Math.random() * 24}px`;
-            p.style.animation = `balloon-float ${duration}s linear ${delay}s forwards`;
+            p.style.animation = `${animation} ${duration}s linear ${delay}s forwards`;
 
             particleContainer.appendChild(p);
             p.addEventListener('animationend', () => p.remove(), { once: true });
@@ -218,9 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         incomingFgImage.src = currentImage;
         updateImageInfo(currentImage);
-        if (!isSpecialMode) {
-            playParticleTheme();
-        }
+        playParticleTheme();
 
         incomingPane.classList.add('active');
         activePane.classList.remove('active');
@@ -324,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetSlideshowState() {
+        bgmElement.loop = false; // Ensure loop is always reset
         isPlaying = false;
         isBgmFinished = false;
         isSpecialMode = false;
@@ -346,15 +345,24 @@ document.addEventListener('DOMContentLoaded', () => {
         currentBgmIndex = 0;
     }
 
+    function updateBgmVolume() {
+        const sliderValue = parseFloat(volumeSlider.value);
+        let newVolume = sliderValue;
+        if (isSpecialMode) {
+            newVolume = Math.min(1.0, sliderValue * 1.3);
+        }
+        bgmElement.volume = newVolume;
+        updateMuteButton();
+    }
+
     function applyAudioSettings() {
         const savedVolume = localStorage.getItem('bgmVolume');
         const isMuted = localStorage.getItem('bgmMuted') === 'true';
         let volumeValue = 0.5;
         if (savedVolume !== null) volumeValue = parseFloat(savedVolume);
-        bgmElement.volume = volumeValue;
         volumeSlider.value = volumeValue;
         bgmElement.muted = isMuted;
-        updateMuteButton();
+        updateBgmVolume();
     }
 
     function updateMuteButton() {
@@ -362,12 +370,27 @@ document.addEventListener('DOMContentLoaded', () => {
         else muteBtn.textContent = '🔊';
     }
 
-    function prepareAndStartSlideshow() {
+    function prepareAndStartSlideshow(startInSpecialMode = false) {
+        if (startInSpecialMode) {
+            particleContainer.style.zIndex = '1011'; // Bring particles to front
+        }
+
         whiteoutDiv.style.transition = 'opacity 0.5s ease-in-out';
         whiteoutDiv.style.opacity = '1';
 
         setTimeout(() => {
             resetSlideshowState();
+            isSpecialMode = startInSpecialMode; // Set mode
+            bgmElement.loop = isSpecialMode; // Set loop based on mode
+            
+            if (isSpecialMode) {
+                playBalloonParty();
+                bgmElement.src = specialBgm;
+            } else {
+                bgmElement.src = bgmPlaylist[0];
+            }
+            updateBgmVolume(); // Apply volume based on mode
+            bgmElement.play().catch(e => console.error("Play failed:", e));
 
             const allFixedImages = [...fixedStartImages, fixedEndImage];
             randomImagePool = originalImageFiles.filter(img => 
@@ -401,12 +424,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setTimeout(() => {
                 whiteoutDiv.style.opacity = '0';
+                // After fade out, reset z-index if it was changed
+                if (startInSpecialMode) {
+                    setTimeout(() => {
+                        particleContainer.style.zIndex = ''; // Reset to CSS default
+                    }, 500); // Match the fade-out duration
+                }
             }, 100);
 
         }, 500);
     }
 
     // --- Event Listeners & Initialization ---
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (isPlaying) {
+                pauseSlideshow();
+            }
+        }
+    });
+
     muteBtn.addEventListener('click', () => {
         bgmElement.muted = !bgmElement.muted;
         localStorage.setItem('bgmMuted', bgmElement.muted);
@@ -414,14 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     volumeSlider.addEventListener('input', () => {
-        const newVolume = parseFloat(volumeSlider.value);
-        bgmElement.volume = newVolume;
-        localStorage.setItem('bgmVolume', newVolume.toString());
-        if (newVolume > 0 && bgmElement.muted) {
+        localStorage.setItem('bgmVolume', volumeSlider.value);
+        updateBgmVolume();
+        if (parseFloat(volumeSlider.value) > 0 && bgmElement.muted) {
             bgmElement.muted = false;
             localStorage.setItem('bgmMuted', 'false');
+            updateMuteButton();
         }
-        updateMuteButton();
     });
 
     bgmElement.addEventListener('ended', () => {
@@ -444,25 +480,22 @@ document.addEventListener('DOMContentLoaded', () => {
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     startBtn.addEventListener('click', () => {
-        isSpecialMode = false;
-        bgmElement.src = bgmPlaylist[0];
-        bgmElement.play().catch(e => console.error("Play failed:", e));
-        prepareAndStartSlideshow();
+        prepareAndStartSlideshow(false);
     });
 
     titleBalloon.addEventListener('click', () => {
-        playBalloonParty();
-        isSpecialMode = true;
-        bgmElement.src = specialBgm;
-        bgmElement.play().catch(e => console.error("Play failed:", e));
-        prepareAndStartSlideshow();
+        prepareAndStartSlideshow(true);
     });
 
     slideshowBalloon.addEventListener('click', () => {
         playBalloonParty();
-        isSpecialMode = true;
-        bgmElement.src = specialBgm;
-        bgmElement.play().catch(error => console.error("BGM Error:", error));
+        if (!isSpecialMode) {
+            isSpecialMode = true;
+            bgmElement.src = specialBgm;
+            bgmElement.loop = true;
+            updateBgmVolume();
+            bgmElement.play().catch(error => console.error("BGM Error:", error));
+        }
     });
 
     if (closeBtn) {

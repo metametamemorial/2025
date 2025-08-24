@@ -67,40 +67,53 @@ body, html {
 @keyframes blurIn { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } }
 @keyframes blurOut { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } }
 @keyframes irisIn { from { clip-path: circle(0%); } to { clip-path: circle(100%); } }
-/* --- Animations --- */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { transform: scale(1); opacity: 1; } }
-@keyframes zoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.2); } }
-@keyframes blurIn { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } }
-@keyframes blurOut { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } }
-@keyframes irisIn { from { clip-path: circle(0%); } to { clip-path: circle(100%); } }
-@keyframes floatUp { from { transform: translateY(0) rotate(var(--r-start)); opacity: 1; } to { transform: translateY(-100vh) rotate(var(--r-end)); opacity: 0; } }
-@keyframes pop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
-@keyframes pop-rotate { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(1.2) rotate(180deg); opacity: 1; } 100% { transform: scale(0) rotate(360deg); opacity: 0; } }
-@keyframes drift { from { transform: translateX(0) translateY(var(--drift-y-start)); opacity: 1; } to { transform: translateX(120vw) translateY(var(--drift-y-end)); opacity: 0; } }
-@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1); } }
-@keyframes scale-and-float-up { from { transform: translateY(0) scale(1); opacity: 1; } to { transform: translateY(-100vh) scale(2); opacity: 0; } }
-@keyframes pop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
-@keyframes pop-rotate { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(1.2) rotate(180deg); opacity: 1; } 100% { transform: scale(0) rotate(360deg); opacity: 0; } }
-@keyframes drift { from { transform: translateX(0) rotate(0deg); opacity: 1; } to { transform: translateX(120vw) rotate(720deg); opacity: 0; } }
-@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1); } }
-@keyframes heart-radiate { from { transform: scale(1); opacity: 1; } to { transform: scale(2.5); opacity: 0; } }
 
-/* --- Animations --- */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { transform: scale(1); opacity: 1; } }
-@keyframes zoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.2); } }
-@keyframes blurIn { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } }
-@keyframes blurOut { from { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(0); opacity: 1; } to { filter: drop-shadow(0 0 15px rgba(0,0,0,0.4)) blur(20px); opacity: 0; } }
-@keyframes irisIn { from { clip-path: circle(0%); } to { clip-path: circle(100%); } }
-@keyframes floatUp { from { transform: translateY(0) rotate(var(--r-start)); opacity: 1; } to { transform: translateY(-110vh) rotate(var(--r-end)); opacity: 0; } }
-@keyframes pop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
-@keyframes pop-rotate { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(1.2) rotate(180deg); opacity: 1; } 100% { transform: scale(0) rotate(360deg); opacity: 0; } }
-@keyframes drift { from { transform: translateX(-10vw) translateY(var(--start-y, 50vh)) rotate(0deg); opacity: 1; } to { transform: translateX(110vw) translateY(var(--end-y, 50vh)) rotate(360deg); opacity: 0; } }
-@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1); } }
-@keyframes heart-radiate { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+/* Particle Animations */
+@keyframes floatUp {
+    from { transform: translateY(0) rotate(var(--r-start)); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateY(-110vh) rotate(var(--r-end)); opacity: 0; }
+}
+@keyframes pop { 
+    0% { transform: scale(0); opacity: 0; } 
+    50% { transform: scale(1.2); opacity: 1; } 
+    100% { transform: scale(0); opacity: 0; } 
+}
+@keyframes pop-rotate { 
+    0% { transform: scale(0) rotate(0deg); opacity: 0; } 
+    50% { transform: scale(1.2) rotate(180deg); opacity: 1; } 
+    100% { transform: scale(0) rotate(360deg); opacity: 0; } 
+}
+@keyframes drift {
+    from { transform: translateX(-10vw) translateY(var(--start-y, 50vh)) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateX(110vw) translateY(var(--end-y, 50vh)) rotate(360deg); opacity: 0; }
+}
+@keyframes twinkle { 
+    0%, 100% { opacity: 0; transform: scale(0.5); } 
+    50% { opacity: 1; transform: scale(1); } 
+}
+@keyframes scale-and-float-up {
+    from { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateY(-100vh) scale(2); opacity: 0; }
+}
+@keyframes balloon-float {
+    from {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100vh) translateX(var(--x-drift)) rotate(var(--r-end));
+        opacity: 0;
+    }
+}
 
 .animate-fade-in { animation: fadeIn 1.5s ease-in-out forwards; }
 .animate-fade-out { animation: fadeOut 1.5s ease-in-out forwards; }
